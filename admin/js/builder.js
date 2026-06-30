@@ -147,6 +147,34 @@
                     if (cb) cb(false);
                 }
             });
+
+            // Accordion toggle (delegated — bound once, not on every re-render)
+            this.$propPanel.on('click', '.sha-accordion-header', function () {
+                var $header = $(this);
+                var $body = $header.next('.sha-accordion-body');
+                $header.toggleClass('expanded collapsed');
+                $body.slideToggle(150);
+                $header.find('.sha-accordion-icon').text($header.hasClass('expanded') ? '\u2212' : '+');
+            });
+
+            // Pseudo-state tab switching
+            this.$propPanel.on('click', '.sha-pseudo-tab', function () {
+                var state = $(this).data('state');
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-tab').removeClass('active');
+                $(this).addClass('active');
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields').hide();
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields[data-state="' + state + '"]').show();
+            });
+
+            // Pseudo-state reset
+            this.$propPanel.on('click', '.sha-pseudo-section .sha-prop-reset', function () {
+                var state = $(this).data('state');
+                var prop = $(this).data('prop');
+                self.resetElementPseudoCSS(state, prop);
+                if (self.state.selectedElement) {
+                    self.displayElementProperties(self.state.selectedElement);
+                }
+            });
         },
 
         switchTab: function (e) {
@@ -736,23 +764,7 @@
                 }
             });
 
-            // Accordion toggle (delegated)
-            this.$propPanel.on('click', '.sha-accordion-header', function () {
-                var $header = $(this);
-                var $body = $header.next('.sha-accordion-body');
-                $header.toggleClass('expanded collapsed');
-                $body.slideToggle(150);
-                $header.find('.sha-accordion-icon').text($header.hasClass('expanded') ? '\u2212' : '+');
-            });
 
-            // Pseudo-state tab switching
-            this.$propPanel.on('click', '.sha-pseudo-tab', function () {
-                var state = $(this).data('state');
-                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-tab').removeClass('active');
-                $(this).addClass('active');
-                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields').hide();
-                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields[data-state="' + state + '"]').show();
-            });
 
             // Pseudo-state inputs
             this.$propPanel.find('.sha-pseudo-input, .sha-pseudo-color').on('change input', function () {
@@ -770,16 +782,6 @@
                     val = $(this).val();
                 }
                 self.updateElementPseudoCSS(state, prop, val);
-            });
-
-            // Pseudo-state reset
-            this.$propPanel.on('click', '.sha-pseudo-section .sha-prop-reset', function () {
-                var state = $(this).data('state');
-                var prop = $(this).data('prop');
-                self.resetElementPseudoCSS(state, prop);
-                if (self.state.selectedElement) {
-                    self.displayElementProperties(self.state.selectedElement);
-                }
             });
 
             // Inline attribute changes

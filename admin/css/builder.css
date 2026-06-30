@@ -7,6 +7,10 @@
     padding: 0;
 }
 
+html.sha-builder-active {
+    margin-top: 0 !important;
+}
+
 html.sha-builder-active,
 html.sha-builder-active body {
     height: 100%;
@@ -17,13 +21,8 @@ html.sha-builder-active #wpadminbar {
     display: none !important;
 }
 
-html.sha-builder-active #wpadminbar + #wpwrap,
-html.sha-builder-active #wpadminbar ~ #wpwrap {
-    margin-top: 0 !important;
-}
-
 .sha-builder-body {
-    background: #1e1e2e;
+    background: #151518;
     color: #e0e0e0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     font-size: 13px;
@@ -37,7 +36,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    background: #1e1e2e;
+    background: #151518;
 }
 
 /* === TOP BAR === */
@@ -48,8 +47,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     height: 44px;
     min-height: 44px;
     padding: 0 14px;
-    background: #0f0f1a;
-    border-bottom: 1px solid #1e1e32;
+    background: #0e0e12;
+    border-bottom: 1px solid #1e1e24;
     z-index: 100;
 }
 
@@ -79,11 +78,11 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-page-title {
-    color: #9a9ab0;
+    color: #9090a0;
     font-size: 11px;
     font-weight: 500;
     padding: 3px 8px;
-    background: #1a1a30;
+    background: #1a1a22;
     border-radius: 4px;
     max-width: 200px;
     overflow: hidden;
@@ -92,7 +91,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-post-id {
-    color: #5a5a78;
+    color: #5a5a6a;
     font-size: 10.5px;
     font-weight: 500;
 }
@@ -141,14 +140,14 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-btn-render {
-    background: #2a2a4a;
-    color: #b0b0d0;
-    border: 1px solid #3a3a5a;
+    background: #282838;
+    color: #a0a0b0;
+    border: 1px solid #38384a;
 }
 
 .sha-btn-render:hover {
-    background: #3a3a5a;
-    color: #e0e0f0;
+    background: #38384a;
+    color: #dcdce4;
 }
 
 .sha-btn-close {
@@ -159,7 +158,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     height: 28px;
     padding: 0;
     background: transparent;
-    color: #5a5a78;
+    color: #5a5a6a;
     border-radius: 5px;
     font-size: 18px;
 }
@@ -183,8 +182,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     width: 340px;
     min-width: 280px;
     max-width: 42%;
-    background: #161628;
-    border-right: 1px solid #1e1e32;
+    background: #18181b;
+    border-right: 1px solid #1e1e24;
     overflow: hidden;
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -204,8 +203,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 /* Tabs */
 .sha-tabs {
     display: flex;
-    background: #121224;
-    border-bottom: 1px solid #1e1e32;
+    background: #131316;
+    border-bottom: 1px solid #1e1e24;
     flex-shrink: 0;
 }
 
@@ -215,7 +214,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     background: transparent;
     border: none;
     border-bottom: 1.5px solid transparent;
-    color: #6a6a88;
+    color: #6b6b7b;
     font-size: 10px;
     font-weight: 700;
     cursor: pointer;
@@ -227,7 +226,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-tab-btn:hover {
-    color: #9a9ab8;
+    color: #9090a0;
     background: rgba(255, 255, 255, 0.03);
 }
 
@@ -253,12 +252,12 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-panel-scroll::-webkit-scrollbar-thumb {
-    background: #2a2a44;
+    background: #2a2a32;
     border-radius: 2px;
 }
 
 .sha-panel-scroll::-webkit-scrollbar-thumb:hover {
-    background: #3a3a5a;
+    background: #38384a;
 }
 
 .sha-panel-content {
@@ -272,7 +271,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 /* === CODE EDITOR === */
 .sha-code-section {
-    border-bottom: 1px solid #1e1e32;
+    border-bottom: 1px solid #1e1e24;
 }
 
 .sha-code-section:last-child {
@@ -283,8 +282,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     display: flex;
     align-items: center;
     padding: 5px 12px;
-    background: #131326;
-    border-bottom: 1px solid #1e1e32;
+    background: #16161a;
+    border-bottom: 1px solid #1e1e24;
 }
 
 .sha-code-lang {
@@ -315,9 +314,9 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     width: 100%;
     min-height: 130px;
     padding: 10px 12px;
-    background: #10101e;
+    background: #0f0f13;
     border: none;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 11.5px;
     line-height: 1.65;
@@ -330,12 +329,12 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-code-editor:focus {
-    background: #0c0c18;
+    background: #0a0a0e;
     box-shadow: inset 0 0 0 1px rgba(240, 131, 58, 0.25);
 }
 
 .sha-code-editor::placeholder {
-    color: #3a3a58;
+    color: #3a3a4a;
 }
 
 .sha-code-editor.html { border-left: 2px solid rgba(228, 77, 38, 0.5); }
@@ -350,7 +349,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     justify-content: center;
     padding: 40px 24px;
     text-align: center;
-    color: #5a5a78;
+    color: #5a5a6a;
     gap: 10px;
 }
 
@@ -367,14 +366,14 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-element-info {
     padding: 12px 16px;
-    background: #131326;
-    border-bottom: 1px solid #1e1e32;
+    background: #16161a;
+    border-bottom: 1px solid #1e1e24;
 }
 
 .sha-element-info h3 {
     font-size: 12px;
     font-weight: 600;
-    color: #d0d0e4;
+    color: #d0d0d8;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -391,14 +390,14 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-field-group {
     padding: 8px 16px;
-    border-bottom: 1px solid #1e1e32;
+    border-bottom: 1px solid #1e1e24;
 }
 
 .sha-field-group label {
     display: block;
     font-size: 10px;
     font-weight: 700;
-    color: #7a7a98;
+    color: #7a7a8a;
     text-transform: uppercase;
     letter-spacing: 0.4px;
     margin-bottom: 5px;
@@ -409,10 +408,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-field-group .sha-attr-input {
     width: 100%;
     padding: 6px 9px;
-    background: #10101e;
-    border: 1px solid #222238;
+    background: #0f0f13;
+    border: 1px solid #22222c;
     border-radius: 4px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-size: 11.5px;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     outline: none;
@@ -440,10 +439,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-attr-row .sha-attr-input {
     flex: 1;
     padding: 5px 8px;
-    background: #10101e;
-    border: 1px solid #222238;
+    background: #0f0f13;
+    border: 1px solid #22222c;
     border-radius: 4px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-size: 11px;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     outline: none;
@@ -462,7 +461,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     padding: 0;
     border: none;
     background: transparent;
-    color: #5a5a78;
+    color: #5a5a6a;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
@@ -488,9 +487,9 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     align-items: center;
     gap: 4px;
     padding: 6px 14px;
-    border: 1px dashed #2a2a44;
+    border: 1px dashed #2a2a32;
     background: transparent;
-    color: #7a7a98;
+    color: #7a7a8a;
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
@@ -524,17 +523,17 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     justify-content: space-between;
     align-items: center;
     padding: 6px 16px;
-    background: #121224;
+    background: #131316;
     cursor: pointer;
     user-select: none;
-    border-top: 1px solid #1e1e32;
-    border-bottom: 1px solid #1e1e32;
+    border-top: 1px solid #1e1e24;
+    border-bottom: 1px solid #1e1e24;
     margin-top: 4px;
     transition: background 0.12s ease;
 }
 
 .sha-accordion-header:hover {
-    background: #191930;
+    background: #191922;
 }
 
 .sha-accordion-header .sha-accordion-label {
@@ -548,7 +547,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-accordion-header .sha-accordion-icon {
     font-size: 12px;
     font-weight: 400;
-    color: #5a5a78;
+    color: #5a5a6a;
     line-height: 1;
 }
 
@@ -571,7 +570,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #5a5a78;
+    color: #5a5a6a;
     margin-bottom: 7px;
     display: block;
 }
@@ -586,10 +585,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     padding: 4px 9px;
     font-size: 10.5px;
     font-weight: 600;
-    border: 1px solid #2a2a44;
+    border: 1px solid #2a2a32;
     border-radius: 4px;
     background: transparent;
-    color: #7a7a98;
+    color: #7a7a8a;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.12s ease;
@@ -597,7 +596,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-pseudo-tab:hover {
     border-color: #f0833a;
-    color: #c8c8dc;
+    color: #c8c8d0;
 }
 
 .sha-pseudo-tab.active {
@@ -618,10 +617,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     flex: 1;
     min-width: 0;
     padding: 5px 8px;
-    background: #10101e;
-    border: 1px solid #222238;
+    background: #0f0f13;
+    border: 1px solid #22222c;
     border-radius: 4px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-size: 11.5px;
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     outline: none;
@@ -636,7 +635,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     width: 26px;
     height: 26px;
     padding: 2px;
-    border: 1px solid #222238;
+    border: 1px solid #22222c;
     border-radius: 4px;
     background: none;
     cursor: pointer;
@@ -678,7 +677,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     width: 28px;
     height: 28px;
     padding: 2px;
-    border: 1px solid #222238;
+    border: 1px solid #22222c;
     border-radius: 4px;
     background: none;
     cursor: pointer;
@@ -690,10 +689,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-unit-select {
     padding: 5px 4px;
-    background: #10101e;
-    border: 1px solid #222238;
+    background: #0f0f13;
+    border: 1px solid #22222c;
     border-radius: 4px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-size: 10.5px;
     font-family: inherit;
     outline: none;
@@ -706,10 +705,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-prop-select {
     width: 100%;
     padding: 5px 8px;
-    background: #10101e;
-    border: 1px solid #222238;
+    background: #0f0f13;
+    border: 1px solid #22222c;
     border-radius: 4px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-size: 11.5px;
     font-family: inherit;
     outline: none;
@@ -731,7 +730,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     -webkit-appearance: none;
     appearance: none;
     height: 3px;
-    background: #222238;
+    background: #22222c;
     border-radius: 2px;
     outline: none;
 }
@@ -750,7 +749,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     min-width: 28px;
     text-align: right;
     font-size: 11px;
-    color: #c8c8dc;
+    color: #c8c8d0;
     font-family: 'Consolas', monospace;
 }
 
@@ -777,12 +776,12 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #5a5a78;
+    color: #5a5a6a;
     padding: 7px 16px 5px;
     margin: 0;
-    background: #121224;
-    border-top: 1px solid #1e1e32;
-    border-bottom: 1px solid #1e1e32;
+    background: #131316;
+    border-top: 1px solid #1e1e24;
+    border-bottom: 1px solid #1e1e24;
 }
 
 /* === RIGHT PANEL === */
@@ -813,15 +812,15 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     align-items: center;
     justify-content: center;
     padding: 6px 16px;
-    background: #0f0f1a;
-    border-top: 1px solid #2a2a3e;
+    background: #0e0e12;
+    border-top: 1px solid #2a2a32;
 }
 
 .sha-preview-footer a {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #6c6c8a;
+    color: #6c6c7c;
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 1.5px;
@@ -891,7 +890,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 /* === TOGGLE PANEL BUTTON === */
 .sha-toggle-panel {
     background: transparent !important;
-    color: #6a6a88 !important;
+    color: #6b6b7b !important;
     padding: 4px 6px !important;
     border-radius: 4px !important;
     border: 1px solid transparent !important;
@@ -900,7 +899,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-toggle-panel:hover {
     background: rgba(255, 255, 255, 0.04) !important;
     color: #b0b0c8 !important;
-    border-color: #2a2a44 !important;
+    border-color: #2a2a32 !important;
 }
 
 .sha-toggle-panel.active {
@@ -921,7 +920,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     padding: 2px;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 6px;
-    border: 1px solid #1e1e32;
+    border: 1px solid #1e1e24;
 }
 
 .sha-top-bar .sha-device-btn {
@@ -932,7 +931,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     background: transparent;
     border: none;
     border-radius: 4px;
-    color: #5a5a78;
+    color: #5a5a6a;
     cursor: pointer;
     transition: all 0.12s ease;
     line-height: 1;
@@ -940,7 +939,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-top-bar .sha-device-btn:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: #9a9ab8;
+    color: #9090a0;
 }
 
 .sha-top-bar .sha-device-btn.active {
@@ -954,11 +953,11 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     align-items: center;
     gap: 5px;
     padding: 7px 14px;
-    background: #0f0f1e;
-    border-top: 1px solid #1e1e32;
+    background: #0e0e12;
+    border-top: 1px solid #1e1e24;
     flex-shrink: 0;
     font-size: 10px;
-    color: #4a4a68;
+    color: #4a4a5a;
 }
 
 .sha-left-footer svg {
@@ -973,7 +972,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-left-footer a {
-    color: #7a7a98;
+    color: #7a7a8a;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.12s ease;
@@ -1026,8 +1025,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-modal-box {
-    background: #1e1e2e;
-    border: 1px solid #2a2a3e;
+    background: #1c1c22;
+    border: 1px solid #2a2a32;
     border-radius: 12px;
     padding: 24px 28px 20px;
     min-width: 320px;
@@ -1039,13 +1038,13 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-modal-title {
     font-size: 15px;
     font-weight: 700;
-    color: #e0e0f0;
+    color: #dcdce4;
     margin-bottom: 8px;
 }
 
 .sha-modal-message {
     font-size: 13px;
-    color: #9a9ab0;
+    color: #9090a0;
     line-height: 1.6;
     margin-bottom: 20px;
 }
@@ -1062,14 +1061,14 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-btn-cancel {
-    background: #2a2a4a;
-    color: #b0b0d0;
-    border: 1px solid #3a3a5a;
+    background: #282838;
+    color: #a0a0b0;
+    border: 1px solid #38384a;
 }
 
 .sha-btn-cancel:hover {
-    background: #3a3a5a;
-    color: #e0e0f0;
+    background: #38384a;
+    color: #dcdce4;
 }
 
 .sha-btn-danger {
@@ -1110,7 +1109,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-loading-text {
     font-size: 12px;
     font-weight: 600;
-    color: #6c6c8a;
+    color: #6c6c7c;
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
@@ -1137,7 +1136,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     padding: 0;
     border: none;
     background: transparent;
-    color: #3a3a58;
+    color: #3a3a4a;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -1202,7 +1201,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
         max-width: 100%;
         max-height: 50vh;
         border-right: none;
-        border-bottom: 1px solid #1e1e32;
+        border-bottom: 1px solid #1e1e24;
     }
     .sha-builder-content {
         flex-direction: column;
@@ -1230,8 +1229,8 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-css-prop-modal {
-    background: #1c1c30;
-    border: 1px solid #2a2a44;
+    background: #1c1c22;
+    border: 1px solid #2a2a32;
     border-radius: 16px;
     width: 520px;
     max-width: 90vw;
@@ -1255,7 +1254,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     align-items: center;
     justify-content: space-between;
     padding: 18px 24px 14px;
-    border-bottom: 1px solid #2a2a44;
+    border-bottom: 1px solid #2a2a32;
     flex-shrink: 0;
 }
 
@@ -1263,7 +1262,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     margin: 0;
     font-size: 15px;
     font-weight: 700;
-    color: #e8e8f4;
+    color: #e0e0e8;
     letter-spacing: -0.2px;
 }
 
@@ -1272,7 +1271,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     height: 30px;
     border: none;
     background: transparent;
-    color: #6c6c8a;
+    color: #6c6c7c;
     font-size: 22px;
     cursor: pointer;
     border-radius: 6px;
@@ -1299,7 +1298,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     left: 36px;
     top: 50%;
     transform: translateY(-50%);
-    color: #6c6c8a;
+    color: #6c6c7c;
     pointer-events: none;
     margin-top: -3px;
 }
@@ -1307,10 +1306,10 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-css-prop-search {
     width: 100%;
     padding: 10px 14px 10px 40px;
-    background: #121220;
-    border: 1px solid #2a2a44;
+    background: #111116;
+    border: 1px solid #2a2a32;
     border-radius: 10px;
-    color: #e0e0f0;
+    color: #dcdce4;
     font-size: 13px;
     font-family: inherit;
     outline: none;
@@ -1323,7 +1322,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-css-prop-search::placeholder {
-    color: #4a4a6a;
+    color: #4a4a5a;
 }
 
 .sha-css-prop-list {
@@ -1345,12 +1344,12 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-css-prop-list::-webkit-scrollbar-thumb {
-    background: #3a3a5a;
+    background: #38384a;
     border-radius: 3px;
 }
 
 .sha-css-prop-list::-webkit-scrollbar-thumb:hover {
-    background: #4a4a6a;
+    background: #4a4a5a;
 }
 
 .sha-css-prop-category {
@@ -1391,7 +1390,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 .sha-css-prop-name {
     font-size: 12.5px;
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
-    color: #c8c8dc;
+    color: #c8c8d0;
     transition: color 0.12s ease;
 }
 
@@ -1402,7 +1401,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 
 .sha-css-prop-value-wrap {
     padding: 12px 24px 14px;
-    border-top: 1px solid #2a2a44;
+    border-top: 1px solid #2a2a32;
     flex-shrink: 0;
 }
 
@@ -1411,17 +1410,17 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #8a8aaa;
+    color: #8a8a9a;
     margin-bottom: 6px;
 }
 
 .sha-css-prop-value {
     width: 100%;
     padding: 10px 14px;
-    background: #121220;
-    border: 1px solid #2a2a44;
+    background: #111116;
+    border: 1px solid #2a2a32;
     border-radius: 10px;
-    color: #e0e0f0;
+    color: #dcdce4;
     font-size: 13px;
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
     outline: none;
@@ -1439,7 +1438,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-css-prop-value::placeholder {
-    color: #4a4a6a;
+    color: #4a4a5a;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -1448,7 +1447,7 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
     gap: 10px;
     justify-content: flex-end;
     padding: 12px 24px 18px;
-    border-top: 1px solid #2a2a44;
+    border-top: 1px solid #2a2a32;
     flex-shrink: 0;
 }
 
@@ -1459,14 +1458,14 @@ html.sha-builder-active #wpadminbar ~ #wpwrap {
 }
 
 .sha-css-prop-footer .sha-btn-cancel {
-    background: #2a2a4a;
-    color: #b0b0d0;
-    border: 1px solid #3a3a5a;
+    background: #282838;
+    color: #a0a0b0;
+    border: 1px solid #38384a;
 }
 
 .sha-css-prop-footer .sha-btn-cancel:hover {
-    background: #3a3a5a;
-    color: #e0e0f0;
+    background: #38384a;
+    color: #dcdce4;
 }
 
 @media (max-width: 600px) {
