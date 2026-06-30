@@ -75,12 +75,19 @@ class Sha_Builder_Main {
         }
 
         $saved_data = get_post_meta($post_id, '_sha_builder_data', true);
+        error_log('[SHA BUILDER] Builder page load post_id=' . $post_id . ' data_type=' . gettype($saved_data) . ' is_array=' . (is_array($saved_data) ? 'true' : 'false'));
+        if (!empty($saved_data['html'])) { error_log('[SHA BUILDER] Loaded html starts with: ' . substr($saved_data['html'], 0, 100)); }
         if (!is_array($saved_data)) {
             $saved_data = array(
                 'html' => '<div style="padding:60px 40px;text-align:center;font-family:Arial,sans-serif;color:#333;"><h1 style="margin:0 0 12px;font-size:28px;">Start Building</h1><p style="font-size:16px;color:#666;">Add your HTML code in the editor panel and click Render.</p></div>',
                 'css'  => '',
                 'js'   => '',
             );
+        } else {
+            // Strip old-style html > body prefixes from override rules
+            if (!empty($saved_data['css'])) {
+                $saved_data['css'] = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $saved_data['css']);
+            }
         }
 
         wp_enqueue_style(

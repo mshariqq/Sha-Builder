@@ -34,7 +34,14 @@ class Sha_Builder_Ajax {
             'saved_at' => current_time('mysql'),
         );
 
-        update_post_meta($post_id, '_sha_builder_data', $data);
+        error_log('[SHA BUILDER] Saving post_id=' . $post_id . ' html_len=' . strlen($html) . ' css_len=' . strlen($css) . ' js_len=' . strlen($js));
+
+        $result = update_post_meta($post_id, '_sha_builder_data', $data);
+
+        if (false === $result) {
+            $existing = get_post_meta($post_id, '_sha_builder_data', true);
+            error_log('[SHA BUILDER] update_post_meta returned false. Existing data type: ' . gettype($existing) . ' serialized: ' . maybe_serialize($existing));
+        }
 
         wp_send_json_success(array(
             'message' => __('Page saved successfully.', 'sha-builder'),
@@ -50,12 +57,16 @@ class Sha_Builder_Ajax {
         }
 
         $data = get_post_meta($post_id, '_sha_builder_data', true);
+        error_log('[SHA BUILDER] Load post_id=' . $post_id . ' data_type=' . gettype($data) . ' is_array=' . (is_array($data) ? 'true' : 'false'));
+
         if (!is_array($data)) {
             $data = array(
                 'html' => '',
                 'css'  => '',
                 'js'   => '',
             );
+        } elseif (!empty($data['css'])) {
+            $data['css'] = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $data['css']);
         }
 
         wp_send_json_success($data);

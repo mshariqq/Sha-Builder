@@ -393,6 +393,83 @@ html.sha-builder-active body {
     font-family: inherit;
 }
 
+/* Attribute row with delete button */
+.sha-attr-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.sha-attr-row .sha-attr-input {
+    flex: 1;
+    padding: 7px 10px;
+    background: #12121e;
+    border: 1px solid #2a2a4a;
+    border-radius: 4px;
+    color: #d4d4e4;
+    font-size: 12px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.sha-attr-row .sha-attr-input:focus {
+    border-color: #f0833a;
+    box-shadow: 0 0 0 2px rgba(240, 131, 58, 0.15);
+}
+
+.sha-attr-del {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #6c6c8a;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.sha-attr-del:hover {
+    background: #3a1a1a;
+    color: #ff6b6b;
+}
+
+.sha-new-attr-row {
+    padding: 12px 16px;
+}
+
+.sha-btn-add-attr {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    border: 1px dashed #3a3a5a;
+    background: transparent;
+    color: #8a8aaa;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: all 0.15s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.sha-btn-add-attr:hover {
+    border-color: #f0833a;
+    color: #f0833a;
+    background: rgba(240, 131, 58, 0.08);
+}
+
 /* Section titles in property panel */
 #properties-panel h4,
 #attributes-panel h4 {
@@ -445,6 +522,32 @@ html.sha-builder-active body {
     height: 100%;
     border: none;
     background: #ffffff;
+}
+
+.sha-preview-footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 16px;
+    background: #0f0f1a;
+    border-top: 1px solid #2a2a3e;
+}
+
+.sha-preview-footer a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c6c8a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.sha-preview-footer a:hover {
+    color: #f0833a;
 }
 
 /* === NOTICES === */
