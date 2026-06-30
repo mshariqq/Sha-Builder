@@ -5,27 +5,49 @@ if (!defined('ABSPATH')) {
 
 class Sha_Builder_Ajax {
 
+    private const MAX_HTML_LENGTH = 524288;
+    private const MAX_CSS_LENGTH  = 262144;
+    private const MAX_JS_LENGTH   = 262144;
+
     public function __construct() {
         add_action('wp_ajax_sha_builder_save', array($this, 'save_builder_data'));
         add_action('wp_ajax_sha_builder_load', array($this, 'load_builder_data'));
     }
 
-    public function save_builder_data() {
-        check_ajax_referer('sha_builder_nonce', 'nonce');
-
-        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-        if (!$post_id || !current_user_can('edit_post', $post_id)) {
-            wp_send_json_error(array('message' => __('Permission denied.', 'sha-builder')));
+    private function verify_request() {
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('Authentication required.', 'sha-builder')));
         }
+        check_ajax_referer('sha_builder_nonce', 'nonce');
+    }
 
+    private function validate_post($post_id) {
         $post = get_post($post_id);
         if (!$post) {
             wp_send_json_error(array('message' => __('Post not found.', 'sha-builder')));
         }
+        if (!in_array($post->post_type, array('page', 'post'), true)) {
+            wp_send_json_error(array('message' => __('Invalid post type.', 'sha-builder')));
+        }
+        if (!current_user_can('edit_post', $post_id)) {
+            wp_send_json_error(array('message' => __('Permission denied.', 'sha-builder')));
+        }
+        return $post;
+    }
 
-        $html = isset($_POST['html']) ? $this->sanitize_html($_POST['html']) : '';
-        $css  = isset($_POST['css'])  ? wp_unslash($_POST['css']) : '';
-        $js   = isset($_POST['js'])   ? wp_unslash($_POST['js']) : '';
+    public function save_builder_data() {
+        $this->verify_request();
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        if (!$post_id) {
+            wp_send_json_error(array('message' => __('Invalid post ID.', 'sha-builder')));
+        }
+
+        $this->validate_post($post_id);
+
+        $html = isset($_POST['html']) ? $this->sanitize_code_input($_POST['html'], self::MAX_HTML_LENGTH) : '';
+        $css  = isset($_POST['css'])  ? $this->sanitize_code_input($_POST['css'], self::MAX_CSS_LENGTH) : '';
+        $js   = isset($_POST['js'])   ? $this->sanitize_code_input($_POST['js'], self::MAX_JS_LENGTH) : '';
 
         $data = array(
             'html'     => $html,
@@ -49,12 +71,14 @@ class Sha_Builder_Ajax {
     }
 
     public function load_builder_data() {
-        check_ajax_referer('sha_builder_nonce', 'nonce');
+        $this->verify_request();
 
         $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-        if (!$post_id || !current_user_can('edit_post', $post_id)) {
-            wp_send_json_error(array('message' => __('Permission denied.', 'sha-builder')));
+        if (!$post_id) {
+            wp_send_json_error(array('message' => __('Invalid post ID.', 'sha-builder')));
         }
+
+        $this->validate_post($post_id);
 
         $data = get_post_meta($post_id, '_sha_builder_data', true);
         error_log('[SHA BUILDER] Load post_id=' . $post_id . ' data_type=' . gettype($data) . ' is_array=' . (is_array($data) ? 'true' : 'false'));
@@ -72,7 +96,12 @@ class Sha_Builder_Ajax {
         wp_send_json_success($data);
     }
 
-    private function sanitize_html($html) {
-        return wp_unslash($html);
+    private function sanitize_code_input($input, $max_length) {
+        $input = wp_unslash($input);
+        $input = wp_check_invalid_utf8($input, true);
+        if (strlen($input) > $max_length) {
+            $input = substr($input, 0, $max_length);
+        }
+        return $input;
     }
 }

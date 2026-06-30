@@ -114,7 +114,7 @@ class Sha_Builder_Admin {
         if (!isset($_POST['_sha_builder_redirect'])) {
             return $location;
         }
-        if (!current_user_can('edit_post', $post_id)) {
+        if (!is_user_logged_in() || !current_user_can('edit_post', $post_id)) {
             return $location;
         }
         return Sha_Builder_Main::instance()->get_builder_url($post_id);
@@ -132,16 +132,21 @@ class Sha_Builder_Admin {
     }
 
     public function render_builder_page_fallback() {
+        if (!is_user_logged_in()) {
+            wp_die(__('You must be logged in to access the builder.', 'sha-builder'), 401);
+        }
+
         if (!isset($_GET['post_id'])) {
             wp_die(__('No page selected.', 'sha-builder'));
         }
+
         $post_id = intval($_GET['post_id']);
         $post = get_post($post_id);
         if (!$post || !in_array($post->post_type, array('page', 'post'), true)) {
-            wp_die(__('Invalid page.', 'sha-builder'));
+            wp_die(__('Invalid page.', 'sha-builder'), 404);
         }
         if (!current_user_can('edit_post', $post_id)) {
-            wp_die(__('Permission denied.', 'sha-builder'));
+            wp_die(__('Permission denied.', 'sha-builder'), 403);
         }
 
         while (ob_get_level()) {
@@ -156,6 +161,13 @@ class Sha_Builder_Admin {
                 'js'   => '',
             );
         }
+
+        $main = Sha_Builder_Main::instance();
+        if (method_exists($main, 'send_security_headers')) {
+            $main->send_security_headers();
+        }
+
+        show_admin_bar(false);
 
         wp_enqueue_style(
             'sha-builder-builder',

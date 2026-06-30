@@ -53,11 +53,15 @@ class Sha_Builder_Main {
     }
 
     public function get_builder_url($post_id) {
+        $post_id = intval($post_id);
         $permalink = get_option('permalink_structure');
         if (!empty($permalink)) {
-            return home_url('/sha-builder/' . intval($post_id) . '/');
+            $url = home_url('/sha-builder/' . $post_id . '/');
+        } else {
+            $url = home_url('/?sha_builder_id=' . $post_id);
         }
-        return home_url('/?sha_builder_id=' . intval($post_id));
+        $url = add_query_arg('_wpnonce', wp_create_nonce('sha_builder_access_' . $post_id), $url);
+        return $url;
     }
 
     public function handle_builder_request() {
@@ -66,13 +70,26 @@ class Sha_Builder_Main {
             return;
         }
 
+        $post_id = intval($post_id);
+
+        if (!is_user_logged_in()) {
+            wp_die(__('You must be logged in to access the builder.', 'sha-builder'), 401);
+        }
+
+        if (!isset($_GET['_wpnonce']) || !wp_verify_nonce($_GET['_wpnonce'], 'sha_builder_access_' . $post_id)) {
+            wp_die(__('Security check failed. Please try again.', 'sha-builder'), 403);
+        }
+
         $post = get_post($post_id);
         if (!$post || !in_array($post->post_type, array('page', 'post'), true)) {
-            wp_die(__('Invalid page.', 'sha-builder'));
+            wp_die(__('Invalid page.', 'sha-builder'), 404);
         }
+
         if (!current_user_can('edit_post', $post_id)) {
-            wp_die(__('Permission denied.', 'sha-builder'));
+            wp_die(__('Permission denied.', 'sha-builder'), 403);
         }
+
+        $this->send_security_headers();
 
         $saved_data = get_post_meta($post_id, '_sha_builder_data', true);
         error_log('[SHA BUILDER] Builder page load post_id=' . $post_id . ' data_type=' . gettype($saved_data) . ' is_array=' . (is_array($saved_data) ? 'true' : 'false'));
@@ -84,7 +101,6 @@ class Sha_Builder_Main {
                 'js'   => '',
             );
         } else {
-            // Strip old-style html > body prefixes from override rules
             if (!empty($saved_data['css'])) {
                 $saved_data['css'] = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $saved_data['css']);
             }
@@ -106,11 +122,12 @@ class Sha_Builder_Main {
         );
 
         wp_localize_script('sha-builder-builder', 'shaBuilder', array(
-            'ajaxUrl'  => admin_url('admin-ajax.php'),
-            'nonce'    => wp_create_nonce('sha_builder_nonce'),
-            'postId'   => $post_id,
-            'closeUrl' => admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))),
-            'strings'  => array(
+            'ajaxUrl'     => admin_url('admin-ajax.php'),
+            'nonce'       => wp_create_nonce('sha_builder_nonce'),
+            'postId'      => $post_id,
+            'closeUrl'    => wp_nonce_url(admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))), 'sha_builder_close'),
+            'closeNonce'  => wp_create_nonce('sha_builder_close'),
+            'strings'     => array(
                 'saveSuccess' => __('Page saved successfully!', 'sha-builder'),
                 'saveError'   => __('Error saving page. Please try again.', 'sha-builder'),
                 'saving'      => __('Saving...', 'sha-builder'),
@@ -120,9 +137,17 @@ class Sha_Builder_Main {
             ),
         ));
 
+        show_admin_bar(false);
         status_header(200);
         include SHA_BUILDER_PATH . 'admin/templates/builder-page.php';
         exit;
+    }
+
+    private function send_security_headers() {
+        header('X-Frame-Options: SAMEORIGIN');
+        header('X-Content-Type-Options: nosniff');
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        header("Content-Security-Policy: frame-ancestors 'self';");
     }
 
     public static function activate() {

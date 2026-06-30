@@ -45,6 +45,13 @@
             this.$panels       = $('.sha-panel-content');
             this.$propPanel    = $('#properties-panel');
             this.$attrPanel    = $('#attributes-panel');
+            this.$leftPanel    = $('.sha-left-panel');
+            this.$resizeHandle = $('.sha-resize-handle');
+            this.$loadingOverlay = $('.sha-loading-overlay');
+            this.$modalOverlay = $('#sha-confirm-modal');
+            this.$modalMessage = $('#sha-modal-message');
+            this.$modalConfirm = $('#sha-modal-confirm');
+            this.$modalCancel  = $('#sha-modal-cancel');
         },
 
         bindEvents: function () {
@@ -65,6 +72,80 @@
             var self = this;
             this.$htmlInput.add(this.$cssInput).add(this.$jsInput).on('input', function () {
                 self.markDirty();
+            });
+
+            // Device preview buttons
+            this.$wrap.on('click', '.sha-device-btn', function () {
+                var $btn = $(this);
+                var device = $btn.data('device');
+                $btn.closest('.sha-device-switcher').find('.sha-device-btn').removeClass('active');
+                $btn.addClass('active');
+                self.setPreviewDevice(device);
+            });
+
+            // Toggle left panel collapse
+            this.$wrap.on('click', '.sha-toggle-panel', function () {
+                var $panel = $('.sha-left-panel');
+                $panel.toggleClass('collapsed');
+                var isCollapsed = $panel.hasClass('collapsed');
+                // Toggle between hamburger and close icon
+                var $btn = $(this);
+                if (isCollapsed) {
+                    $btn.find('svg').html('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>');
+                    $btn.addClass('active');
+                } else {
+                    $btn.find('svg').html('<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>');
+                    $btn.removeClass('active');
+                }
+                // Trigger window resize for iframe to adjust
+                $(window).trigger('resize');
+            });
+
+            // Panel resize
+            this.$resizeHandle.on('mousedown', function (e) {
+                e.preventDefault();
+                var startX = e.clientX;
+                var startWidth = self.$leftPanel.outerWidth();
+                self.$resizeHandle.addClass('active');
+                $(document).on('mousemove.sha-resize', function (e2) {
+                    var dx = e2.clientX - startX;
+                    var newW = startWidth + dx;
+                    newW = Math.max(260, Math.min(newW, window.innerWidth * 0.55));
+                    self.$leftPanel.css('width', newW);
+                });
+                $(document).on('mouseup.sha-resize', function () {
+                    self.$resizeHandle.removeClass('active');
+                    $(document).off('.sha-resize');
+                });
+            });
+
+            // Modal confirm/cancel
+            this.$modalConfirm.add(this.$modalCancel).on('click', function () {
+                self.hideModal();
+                var cb = self._modalCallback;
+                self._modalCallback = null;
+                if ($(this).is(self.$modalConfirm) && cb) cb(true);
+                else if (cb) cb(false);
+            });
+
+            // Close modal on overlay click
+            this.$modalOverlay.on('click', function (e) {
+                if (e.target === this) {
+                    self.hideModal();
+                    var cb = self._modalCallback;
+                    self._modalCallback = null;
+                    if (cb) cb(false);
+                }
+            });
+
+            // Close modal on Escape
+            $(document).on('keydown.sha-modal', function (e) {
+                if (e.key === 'Escape' && self.$modalOverlay.is(':visible')) {
+                    self.hideModal();
+                    var cb = self._modalCallback;
+                    self._modalCallback = null;
+                    if (cb) cb(false);
+                }
             });
         },
 
@@ -203,11 +284,12 @@
         },
 
         renderPreview: function () {
+            this.startLoading();
             var doc = this.buildPreviewDocument();
             this.$previewFrame.attr('srcdoc', doc);
 
             var self = this;
-            this.$previewFrame.one('load', function () {
+            this.$previewFrame.off('load').on('load', function () {
                 setTimeout(function () {
                     try {
                         var iframeDoc = self.$previewFrame[0].contentDocument || self.$previewFrame[0].contentWindow.document;
@@ -216,14 +298,30 @@
                             self.$previewFrame.height(height);
                         }
                     } catch (e) {}
+                    self.stopLoading();
+                    self.injectPseudoStyles();
                 }, 100);
             });
+        },
+
+        setPreviewDevice: function (device) {
+            var $container = this.$previewFrame.parent();
+            $container.removeClass('sha-responsive-desktop sha-responsive-tablet sha-responsive-mobile');
+            if (device === 'desktop') {
+                $container.addClass('sha-responsive-desktop');
+                $container.css({ 'max-width': '', 'margin': '' });
+            } else if (device === 'tablet') {
+                $container.addClass('sha-responsive-tablet');
+            } else if (device === 'mobile') {
+                $container.addClass('sha-responsive-mobile');
+            }
         },
 
         /* ===================================================
                IFRAME MESSAGE HANDLER
                =================================================== */
         handleIframeMessage: function (e) {
+            if (e.origin !== window.location.origin) return;
             if (!e.data || e.data.type !== 'element-selected') return;
 
             try {
@@ -258,58 +356,273 @@
             propHtml += '<input type="text" class="sha-text-input" value="' + this.escAttr(data.textContent) + '" />';
             propHtml += '</div>';
 
-            // === FIXED 20 CSS PROPERTIES (always shown) ===
             var computedRef = data.computedRef || {};
             var explicit = data.explicitCSS || {};
             var fixedProps = [
                 // Text / Typography
-                { prop: 'color',           label: 'Color',                group: 'Text' },
-                { prop: 'font-family',     label: 'Font Family',         group: 'Text' },
-                { prop: 'font-size',       label: 'Font Size',           group: 'Text' },
-                { prop: 'font-weight',     label: 'Font Weight',         group: 'Text' },
-                { prop: 'text-align',      label: 'Text Align',          group: 'Text' },
-                { prop: 'line-height',     label: 'Line Height',         group: 'Text' },
-                { prop: 'letter-spacing',  label: 'Letter Spacing',      group: 'Text' },
-                { prop: 'text-transform',  label: 'Text Transform',      group: 'Text' },
+                { prop: 'color',             label: 'Color',               group: 'Text' },
+                { prop: 'font-family',       label: 'Font Family',        group: 'Text' },
+                { prop: 'font-size',         label: 'Font Size',          group: 'Text' },
+                { prop: 'font-weight',       label: 'Font Weight',        group: 'Text' },
+                { prop: 'font-style',        label: 'Font Style',         group: 'Text' },
+                { prop: 'text-align',        label: 'Text Align',         group: 'Text' },
+                { prop: 'text-decoration',   label: 'Text Decoration',    group: 'Text' },
+                { prop: 'text-transform',    label: 'Text Transform',     group: 'Text' },
+                { prop: 'line-height',       label: 'Line Height',        group: 'Text' },
+                { prop: 'letter-spacing',    label: 'Letter Spacing',     group: 'Text' },
+                { prop: 'word-spacing',      label: 'Word Spacing',       group: 'Text' },
+                { prop: 'white-space',       label: 'White Space',        group: 'Text' },
                 // Background
-                { prop: 'background-color', label: 'Background Color',  group: 'Background' },
-                // Spacing
-                { prop: 'margin-top',      label: 'Margin Top',          group: 'Margin' },
-                { prop: 'margin-right',    label: 'Margin Right',        group: 'Margin' },
-                { prop: 'margin-bottom',   label: 'Margin Bottom',       group: 'Margin' },
-                { prop: 'margin-left',     label: 'Margin Left',         group: 'Margin' },
-                { prop: 'padding-top',     label: 'Padding Top',         group: 'Padding' },
-                { prop: 'padding-right',   label: 'Padding Right',       group: 'Padding' },
-                { prop: 'padding-bottom',  label: 'Padding Bottom',      group: 'Padding' },
-                { prop: 'padding-left',    label: 'Padding Left',        group: 'Padding' },
+                { prop: 'background-color',  label: 'Background Color',  group: 'Background' },
+                { prop: 'background-image',  label: 'Background Image',  group: 'Background' },
+                { prop: 'background-size',   label: 'Background Size',   group: 'Background' },
+                { prop: 'background-position', label: 'Bg Position',     group: 'Background' },
+                // Margin
+                { prop: 'margin-top',        label: 'Margin Top',         group: 'Margin' },
+                { prop: 'margin-right',      label: 'Margin Right',       group: 'Margin' },
+                { prop: 'margin-bottom',     label: 'Margin Bottom',      group: 'Margin' },
+                { prop: 'margin-left',       label: 'Margin Left',        group: 'Margin' },
+                // Padding
+                { prop: 'padding-top',       label: 'Padding Top',        group: 'Padding' },
+                { prop: 'padding-right',     label: 'Padding Right',      group: 'Padding' },
+                { prop: 'padding-bottom',    label: 'Padding Bottom',     group: 'Padding' },
+                { prop: 'padding-left',      label: 'Padding Left',       group: 'Padding' },
                 // Border
-                { prop: 'border-radius',   label: 'Border Radius',       group: 'Border' },
-                // Layout / Other
-                { prop: 'display',         label: 'Display',             group: 'Layout' },
-                { prop: 'opacity',         label: 'Opacity',             group: 'Effects' },
+                { prop: 'border-radius',     label: 'Border Radius',      group: 'Border' },
+                { prop: 'border-width',      label: 'Border Width',       group: 'Border' },
+                { prop: 'border-style',      label: 'Border Style',       group: 'Border' },
+                { prop: 'border-color',      label: 'Border Color',       group: 'Border' },
+                // Layout
+                { prop: 'display',           label: 'Display',            group: 'Layout' },
+                { prop: 'width',             label: 'Width',              group: 'Layout' },
+                { prop: 'height',            label: 'Height',             group: 'Layout' },
+                { prop: 'overflow',          label: 'Overflow',           group: 'Layout' },
+                { prop: 'flex-direction',    label: 'Flex Direction',     group: 'Layout' },
+                { prop: 'flex-wrap',         label: 'Flex Wrap',          group: 'Layout' },
+                { prop: 'align-items',       label: 'Align Items',        group: 'Layout' },
+                { prop: 'justify-content',   label: 'Justify Content',    group: 'Layout' },
+                { prop: 'gap',               label: 'Gap',                group: 'Layout' },
+                // Effects
+                { prop: 'opacity',           label: 'Opacity',            group: 'Effects' },
+                { prop: 'cursor',            label: 'Cursor',             group: 'Effects' },
+                { prop: 'box-shadow',        label: 'Box Shadow',         group: 'Effects' },
+                { prop: 'transform',         label: 'Transform',          group: 'Effects' },
+                { prop: 'transition',        label: 'Transition',         group: 'Effects' },
             ];
 
             propHtml += '<h4>Element Styles</h4>';
 
-            var currentGroup = '';
+            var sel = this.state.currentSelector;
+            var overridesForSel = (sel && this.state.overrides[sel]) || {};
+
+            var propConfig = {
+                'color':             { type: 'color' },
+                'background-color':  { type: 'color' },
+                'border-color':      { type: 'color' },
+                'font-size':         { type: 'number-unit', units: ['px', 'em', 'rem'], defaultUnit: 'px' },
+                'font-weight':       { type: 'select', options: ['100','200','300','400','500','600','700','800','900','normal','bold','lighter','bolder'] },
+                'text-align':        { type: 'select', options: ['left','center','right','justify'] },
+                'line-height':       { type: 'number-unit', units: ['', 'px', 'em', '%'], defaultUnit: '' },
+                'letter-spacing':    { type: 'number-unit', units: ['px', 'em'], defaultUnit: 'px' },
+                'word-spacing':      { type: 'number-unit', units: ['px', 'em'], defaultUnit: 'px' },
+                'text-transform':    { type: 'select', options: ['none','uppercase','lowercase','capitalize'] },
+                'font-style':        { type: 'select', options: ['normal','italic','oblique'] },
+                'text-decoration':   { type: 'select', options: ['none','underline','overline','line-through'] },
+                'white-space':       { type: 'select', options: ['normal','nowrap','pre','pre-wrap','pre-line'] },
+                'margin-top':        { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'margin-right':      { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'margin-bottom':     { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'margin-left':       { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'padding-top':       { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'padding-right':     { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'padding-bottom':    { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'padding-left':      { type: 'number-unit', units: ['px', 'em', 'rem', '%'], defaultUnit: 'px' },
+                'border-radius':     { type: 'number-unit', units: ['px', '%'], defaultUnit: 'px' },
+                'border-width':      { type: 'number-unit', units: ['px'], defaultUnit: 'px' },
+                'border-style':      { type: 'select', options: ['none','solid','dashed','dotted','double','groove','ridge','inset','outset'] },
+                'display':           { type: 'select', options: ['block','flex','inline','inline-block','grid','none','contents','flow-root'] },
+                'overflow':          { type: 'select', options: ['visible','hidden','scroll','auto'] },
+                'flex-direction':    { type: 'select', options: ['row','column','row-reverse','column-reverse'] },
+                'flex-wrap':         { type: 'select', options: ['nowrap','wrap','wrap-reverse'] },
+                'align-items':       { type: 'select', options: ['flex-start','flex-end','center','stretch','baseline'] },
+                'justify-content':   { type: 'select', options: ['flex-start','flex-end','center','space-between','space-around','space-evenly'] },
+                'gap':               { type: 'number-unit', units: ['px', 'em', 'rem'], defaultUnit: 'px' },
+                'cursor':            { type: 'select', options: ['auto','default','pointer','grab','move','not-allowed','text','wait','crosshair','help'] },
+                'opacity':           { type: 'range', min: 0, max: 1, step: 0.05 },
+                'background-size':   { type: 'select', options: ['cover','contain','auto','100%'] },
+            };
+
+            // Build groups from fixedProps preserving order
+            var groups = {};
+            var groupOrder = [];
             for (var fi = 0; fi < fixedProps.length; fi++) {
                 var fp = fixedProps[fi];
-                // Group header
-                if (fp.group !== currentGroup) {
-                    currentGroup = fp.group;
-                    propHtml += '<div class="sha-prop-group-label">' + this.escHtml(currentGroup) + '</div>';
+                if (!groups[fp.group]) {
+                    groups[fp.group] = [];
+                    groupOrder.push(fp.group);
+                }
+                groups[fp.group].push(fp);
+            }
+
+            // Render each group as an accordion
+            for (var gi = 0; gi < groupOrder.length; gi++) {
+                var gName = groupOrder[gi];
+                var props = groups[gName];
+                var groupId = 'sha-group-' + gName.toLowerCase().replace(/\s+/g, '-');
+
+                propHtml += '<div class="sha-accordion-header collapsed" data-group="' + this.escAttr(gName) + '">';
+                propHtml += '<span class="sha-accordion-label">' + this.escHtml(gName) + '</span>';
+                propHtml += '<span class="sha-accordion-icon">+</span>';
+                propHtml += '</div>';
+                propHtml += '<div class="sha-accordion-body" id="' + groupId + '" style="display:none;">';
+
+                for (var pi = 0; pi < props.length; pi++) {
+                    fp = props[pi];
+                    var val = (explicit[fp.prop] !== undefined) ? explicit[fp.prop] : '';
+                    var cfg = propConfig[fp.prop] || {};
+                    var hasOverride = overridesForSel[fp.prop] !== undefined;
+
+                    propHtml += '<div class="sha-field-group">';
+                    propHtml += '<label>' + this.escHtml(fp.label) + '</label>';
+
+                    if (cfg.type === 'color') {
+                        var hexColor = this.toHexColor(val);
+                        propHtml += '<div class="sha-field-row">';
+                        propHtml += '<input type="text" class="sha-css-input" data-prop="' + this.escAttr(fp.prop) + '" value="' + this.escAttr(val) + '" placeholder="' + this.escAttr(fp.label) + '" />';
+                        propHtml += '<input type="color" class="sha-color-picker" value="' + (hexColor || '#000000') + '" data-prop="' + this.escAttr(fp.prop) + '" />';
+                        if (hasOverride) propHtml += '<button class="sha-prop-reset" data-prop="' + this.escAttr(fp.prop) + '" title="Reset">&times;</button>';
+                        propHtml += '</div>';
+                    } else if (cfg.type === 'number-unit') {
+                        var parsed = this.splitCSSValue(val, cfg.defaultUnit || 'px');
+                        propHtml += '<div class="sha-field-row">';
+                        propHtml += '<input type="text" class="sha-num-input" data-prop="' + this.escAttr(fp.prop) + '" value="' + this.escAttr(parsed.num) + '" placeholder="' + this.escAttr(fp.label) + '" />';
+                        propHtml += '<select class="sha-unit-select" data-prop="' + this.escAttr(fp.prop) + '">';
+                        for (var ui = 0; ui < cfg.units.length; ui++) {
+                            var uVal = cfg.units[ui];
+                            propHtml += '<option value="' + this.escAttr(uVal) + '"' + (parsed.unit === uVal ? ' selected' : '') + '>' + (uVal || '\u2014') + '</option>';
+                        }
+                        propHtml += '</select>';
+                        if (hasOverride) propHtml += '<button class="sha-prop-reset" data-prop="' + this.escAttr(fp.prop) + '" title="Reset">&times;</button>';
+                        propHtml += '</div>';
+                    } else if (cfg.type === 'select') {
+                        propHtml += '<div class="sha-field-row">';
+                        propHtml += '<select class="sha-prop-select" data-prop="' + this.escAttr(fp.prop) + '">';
+                        for (var oi = 0; oi < cfg.options.length; oi++) {
+                            var opt = cfg.options[oi];
+                            propHtml += '<option value="' + this.escAttr(opt) + '"' + (val === opt ? ' selected' : '') + '>' + this.escHtml(opt) + '</option>';
+                        }
+                        propHtml += '</select>';
+                        if (hasOverride) propHtml += '<button class="sha-prop-reset" data-prop="' + this.escAttr(fp.prop) + '" title="Reset">&times;</button>';
+                        propHtml += '</div>';
+                    } else if (cfg.type === 'range') {
+                        var rNum = parseFloat(val);
+                        if (isNaN(rNum)) rNum = cfg.min || 0;
+                        propHtml += '<div class="sha-field-row">';
+                        propHtml += '<div class="sha-range-control" style="flex:1;">';
+                        propHtml += '<input type="range" class="sha-range-input" data-prop="' + this.escAttr(fp.prop) + '" min="' + cfg.min + '" max="' + cfg.max + '" step="' + cfg.step + '" value="' + rNum + '" />';
+                        propHtml += '<span class="sha-range-value">' + rNum + '</span>';
+                        propHtml += '</div>';
+                        if (hasOverride) propHtml += '<button class="sha-prop-reset" data-prop="' + this.escAttr(fp.prop) + '" title="Reset">&times;</button>';
+                        propHtml += '</div>';
+                    } else {
+                        propHtml += '<div class="sha-field-row">';
+                        propHtml += '<input type="text" class="sha-css-input" data-prop="' + this.escAttr(fp.prop) + '" value="' + this.escAttr(val) + '" placeholder="' + this.escAttr(fp.label) + '" />';
+                        if (hasOverride) propHtml += '<button class="sha-prop-reset" data-prop="' + this.escAttr(fp.prop) + '" title="Reset">&times;</button>';
+                        propHtml += '</div>';
+                    }
+
+                    propHtml += '</div>';
                 }
 
-                // Pre-fill from explicitCSS (what's set on this element), else empty
-                var val = (explicit[fp.prop] !== undefined) ? explicit[fp.prop] : '';
-                propHtml += '<div class="sha-field-group">';
-                propHtml += '<label>' + this.escHtml(fp.label) + '</label>';
-                propHtml += '<input type="text" class="sha-css-input" data-prop="' + this.escAttr(fp.prop) + '" value="' + this.escAttr(val) + '" placeholder="' + this.escAttr(fp.label) + '" />';
+                propHtml += '</div>';
+            }
+
+            // === INTERACTIVE STATES (a, button) ===
+            var tagName = (data.tagName || '').toLowerCase();
+            if (tagName === 'a' || tagName === 'button') {
+                var baseSel = this.state.currentSelector || '';
+                var pseudoStates = [
+                    { pseudo: 'hover', label: 'Hover' },
+                    { pseudo: 'focus', label: 'Focus' },
+                    { pseudo: 'active', label: 'Active' },
+                ];
+                var pseudoProps = [
+                    { prop: 'color', label: 'Color', type: 'color' },
+                    { prop: 'background-color', label: 'Background', type: 'color' },
+                    { prop: 'text-decoration', label: 'Decoration', type: 'select', options: ['none','underline','overline','line-through'] },
+                    { prop: 'opacity', label: 'Opacity', type: 'range', min: 0, max: 1, step: 0.05 },
+                ];
+                var isPseudoActive = {};
+                for (var psi = 0; psi < pseudoStates.length; psi++) {
+                    var ps = pseudoStates[psi];
+                    var fullSel = baseSel ? baseSel + ':' + ps.pseudo : '';
+                    if (fullSel && this.state.overrides[fullSel]) {
+                        isPseudoActive[ps.pseudo] = true;
+                    }
+                }
+
+                propHtml += '<h4>Interactive States</h4>';
+                propHtml += '<div class="sha-pseudo-section">';
+                propHtml += '<div class="sha-pseudo-tabs">';
+                for (var pti = 0; pti < pseudoStates.length; pti++) {
+                    var pst = pseudoStates[pti];
+                    var activeClass = (pst.pseudo === 'hover') ? ' active' : '';
+                    propHtml += '<button class="sha-pseudo-tab' + activeClass + '" data-state="' + pst.pseudo + '">' + pst.label + '</button>';
+                }
+                propHtml += '</div>';
+
+                for (var psi2 = 0; psi2 < pseudoStates.length; psi2++) {
+                    var ps2 = pseudoStates[psi2];
+                    var fullSel2 = baseSel ? baseSel + ':' + ps2.pseudo : '';
+                    var pseudoOverrides = (fullSel2 && this.state.overrides[fullSel2]) || {};
+
+                    propHtml += '<div class="sha-pseudo-fields" data-state="' + ps2.pseudo + '">';
+                    for (var ppi = 0; ppi < pseudoProps.length; ppi++) {
+                        var pp = pseudoProps[ppi];
+                        var pVal = pseudoOverrides[pp.prop] !== undefined ? pseudoOverrides[pp.prop] : '';
+                        var pHasOverride = pseudoOverrides[pp.prop] !== undefined;
+
+                        propHtml += '<div class="sha-field-group" style="padding:6px 0;">';
+                        propHtml += '<label style="text-transform:none;letter-spacing:0;font-size:11px;">' + ps2.label + ' ' + pp.label + '</label>';
+
+                        if (pp.type === 'color') {
+                            var pHex = this.toHexColor(pVal);
+                            propHtml += '<div class="sha-field-row">';
+                            propHtml += '<input type="text" class="sha-pseudo-input" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" value="' + this.escAttr(pVal) + '" placeholder="' + pp.label + '" />';
+                            propHtml += '<input type="color" class="sha-pseudo-color" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" value="' + (pHex || '#000000') + '" />';
+                            if (pHasOverride) propHtml += '<button class="sha-prop-reset" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" title="Reset">&times;</button>';
+                            propHtml += '</div>';
+                        } else if (pp.type === 'select') {
+                            propHtml += '<div class="sha-field-row">';
+                            propHtml += '<select class="sha-pseudo-input" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" style="flex:1;">';
+                            for (var pOi = 0; pOi < pp.options.length; pOi++) {
+                                var pOpt = pp.options[pOi];
+                                propHtml += '<option value="' + this.escAttr(pOpt) + '"' + (pVal === pOpt ? ' selected' : '') + '>' + this.escHtml(pOpt) + '</option>';
+                            }
+                            propHtml += '</select>';
+                            if (pHasOverride) propHtml += '<button class="sha-prop-reset" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" title="Reset">&times;</button>';
+                            propHtml += '</div>';
+                        } else if (pp.type === 'range') {
+                            var pRNum = parseFloat(pVal);
+                            if (isNaN(pRNum)) pRNum = 1;
+                            propHtml += '<div class="sha-field-row">';
+                            propHtml += '<div class="sha-range-control" style="flex:1;">';
+                            propHtml += '<input type="range" class="sha-pseudo-input" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" min="' + pp.min + '" max="' + pp.max + '" step="' + pp.step + '" value="' + pRNum + '" />';
+                            propHtml += '<span class="sha-range-value">' + pRNum + '</span>';
+                            propHtml += '</div>';
+                            if (pHasOverride) propHtml += '<button class="sha-prop-reset" data-state="' + ps2.pseudo + '" data-prop="' + pp.prop + '" title="Reset">&times;</button>';
+                            propHtml += '</div>';
+                        }
+                        propHtml += '</div>';
+                    }
+                    propHtml += '</div>';
+                }
+
                 propHtml += '</div>';
             }
 
             propHtml += '<div class="sha-new-attr-row">';
-            propHtml += '<button class="sha-btn sha-btn-add-attr sha-btn-add-prop">+ Add CSS Property</button>';
+            propHtml += '<button class="sha-btn sha-btn-add-prop">+ Add CSS Property</button>';
             propHtml += '</div>';
 
             // === INHERITED VALUES (collapsible) ===
@@ -342,7 +655,7 @@
             }
 
             propHtml += '<div class="sha-new-attr-row">';
-            propHtml += '<button class="sha-btn sha-btn-add-attr sha-btn-add-prop">+ Add CSS Property</button>';
+            propHtml += '<button class="sha-btn sha-btn-add-prop">+ Add CSS Property</button>';
             propHtml += '</div>';
 
             // --- ATTRIBUTES SECTION (inline in Properties panel) ---
@@ -380,6 +693,95 @@
                 self.updateElementCSS(prop, val);
             });
 
+            // Color picker sync
+            this.$propPanel.find('.sha-color-picker').on('input', function () {
+                var prop = $(this).data('prop');
+                var val = $(this).val();
+                var $textInput = $(this).closest('.sha-field-row').find('.sha-css-input');
+                if ($textInput.length) $textInput.val(val);
+                self.updateElementCSS(prop, val);
+            });
+
+            // Number + unit controls
+            this.$propPanel.find('.sha-num-input, .sha-unit-select').on('change', function () {
+                var $row = $(this).closest('.sha-field-row');
+                var prop = $row.find('.sha-num-input').data('prop');
+                var num = $row.find('.sha-num-input').val();
+                var unit = $row.find('.sha-unit-select').val();
+                var val = /^[\d.-]+$/.test(num) ? num + unit : num;
+                self.updateElementCSS(prop, val);
+            });
+
+            // Property select dropdowns
+            this.$propPanel.find('.sha-prop-select').on('change', function () {
+                var prop = $(this).data('prop');
+                var val = $(this).val();
+                self.updateElementCSS(prop, val);
+            });
+
+            // Range sliders
+            this.$propPanel.find('.sha-range-input').on('input', function () {
+                var prop = $(this).data('prop');
+                var val = $(this).val();
+                $(this).closest('.sha-range-control').find('.sha-range-value').text(val);
+                self.updateElementCSS(prop, val);
+            });
+
+            // Property reset buttons
+            this.$propPanel.find('.sha-prop-reset').on('click', function () {
+                var prop = $(this).data('prop');
+                self.resetElementCSS(prop);
+                if (self.state.selectedElement) {
+                    self.displayElementProperties(self.state.selectedElement);
+                }
+            });
+
+            // Accordion toggle (delegated)
+            this.$propPanel.on('click', '.sha-accordion-header', function () {
+                var $header = $(this);
+                var $body = $header.next('.sha-accordion-body');
+                $header.toggleClass('expanded collapsed');
+                $body.slideToggle(150);
+                $header.find('.sha-accordion-icon').text($header.hasClass('expanded') ? '\u2212' : '+');
+            });
+
+            // Pseudo-state tab switching
+            this.$propPanel.on('click', '.sha-pseudo-tab', function () {
+                var state = $(this).data('state');
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-tab').removeClass('active');
+                $(this).addClass('active');
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields').hide();
+                $(this).closest('.sha-pseudo-section').find('.sha-pseudo-fields[data-state="' + state + '"]').show();
+            });
+
+            // Pseudo-state inputs
+            this.$propPanel.find('.sha-pseudo-input, .sha-pseudo-color').on('change input', function () {
+                var $row = $(this).closest('.sha-field-row');
+                var state = $(this).data('state');
+                var prop = $(this).data('prop');
+                var val;
+                if ($(this).is('.sha-pseudo-color')) {
+                    val = $(this).val();
+                    $row.find('.sha-pseudo-input').val(val);
+                } else if ($(this).is('.sha-pseudo-input') && $(this).is('input[type="range"]')) {
+                    val = $(this).val();
+                    $row.find('.sha-range-value').text(val);
+                } else {
+                    val = $(this).val();
+                }
+                self.updateElementPseudoCSS(state, prop, val);
+            });
+
+            // Pseudo-state reset
+            this.$propPanel.on('click', '.sha-pseudo-section .sha-prop-reset', function () {
+                var state = $(this).data('state');
+                var prop = $(this).data('prop');
+                self.resetElementPseudoCSS(state, prop);
+                if (self.state.selectedElement) {
+                    self.displayElementProperties(self.state.selectedElement);
+                }
+            });
+
             // Inline attribute changes
             this.$propPanel.find('.sha-attr-inline').on('change', function () {
                 var key = $(this).data('attr');
@@ -390,10 +792,13 @@
             // Delete attribute
             this.$propPanel.find('.sha-attr-del').on('click', function () {
                 var key = $(this).data('attr');
-                if (confirm('Remove attribute "' + key + '"?')) {
-                    self.updateElementAttr(key, '');
-                    $(this).closest('.sha-field-group').remove();
-                }
+                var $group = $(this).closest('.sha-field-group');
+                self.confirmDialog('Remove attribute "' + key + '"?', function (confirmed) {
+                    if (confirmed) {
+                        self.updateElementAttr(key, '');
+                        $group.remove();
+                    }
+                });
             });
 
             // Add CSS property button
@@ -431,19 +836,202 @@
 
         showAddCSSPropertyDialog: function () {
             var self = this;
-            var propName = prompt('Enter CSS property name (e.g., color, margin-top):');
-            if (!propName || propName.trim() === '') return;
-            propName = propName.trim();
-            var propValue = prompt('Enter value for "' + propName + '":');
-            if (propValue === null) return;
-            propValue = propValue.trim();
 
-            self.updateElementCSS(propName, propValue);
-            var sel = this.state.selectedElement;
-            if (sel) {
-                sel.explicitCSS[propName] = propValue;
-                this.displayElementProperties(sel);
+            // Remove existing modal if any
+            $('.sha-css-prop-overlay').remove();
+
+            var propCategories = {
+                'Typography': ['color', 'font-family', 'font-size', 'font-weight', 'font-style', 'font-variant', 'line-height', 'letter-spacing', 'word-spacing', 'white-space', 'word-break', 'text-align', 'text-decoration', 'text-transform', 'text-shadow', 'text-indent', 'vertical-align', 'direction', 'overflow-wrap', 'hyphens'],
+                'Background': ['background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'background-attachment', 'background-clip', 'background-origin', 'background-blend-mode'],
+                'Margin': ['margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
+                'Padding': ['padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
+                'Border & Outline': ['border', 'border-width', 'border-style', 'border-color', 'border-radius', 'outline', 'outline-width', 'outline-style', 'outline-color', 'outline-offset', 'border-collapse', 'border-spacing'],
+                'Layout': ['display', 'position', 'top', 'right', 'bottom', 'left', 'float', 'clear', 'visibility', 'overflow', 'overflow-x', 'overflow-y', 'z-index', 'box-sizing', 'resize', 'isolation', 'object-fit', 'object-position'],
+                'Flexbox': ['flex', 'flex-direction', 'flex-wrap', 'flex-flow', 'flex-grow', 'flex-shrink', 'flex-basis', 'align-items', 'align-content', 'align-self', 'justify-content', 'order', 'gap', 'row-gap', 'column-gap'],
+                'Grid': ['grid', 'grid-template', 'grid-template-columns', 'grid-template-rows', 'grid-template-areas', 'grid-column', 'grid-row', 'grid-column-start', 'grid-column-end', 'grid-row-start', 'grid-row-end', 'grid-area', 'justify-items', 'align-items', 'place-items', 'place-content', 'place-self'],
+                'Size': ['width', 'height', 'min-width', 'min-height', 'max-width', 'max-height'],
+                'Effects': ['opacity', 'transform', 'transform-origin', 'transition', 'transition-property', 'transition-duration', 'transition-timing-function', 'transition-delay', 'animation', 'animation-name', 'animation-duration', 'animation-timing-function', 'animation-delay', 'animation-iteration-count', 'animation-direction', 'animation-fill-mode', 'animation-play-state', 'box-shadow', 'filter', 'backdrop-filter', 'mix-blend-mode', 'cursor', 'pointer-events', 'user-select', 'clip-path'],
+                'Content & UI': ['content', 'quotes', 'counter-increment', 'counter-reset', 'list-style', 'list-style-type', 'list-style-position', 'list-style-image', 'appearance', 'caret-color', 'accent-color', 'color-scheme', 'scroll-behavior', 'scrollbar-width', 'scrollbar-color', 'writing-mode', 'text-orientation', 'caption-side', 'table-layout', 'empty-cells']
+            };
+
+            var catKeys = Object.keys(propCategories);
+
+            var html = '';
+            // Build all category HTML for the list
+            var listHtml = '';
+            for (var ci = 0; ci < catKeys.length; ci++) {
+                var cn = catKeys[ci];
+                var props = propCategories[cn].slice().sort();
+                listHtml += '<div class="sha-css-prop-category" data-category="' + cn + '">';
+                listHtml += '<div class="sha-css-prop-cat-label">' + cn + '</div>';
+                for (var pi = 0; pi < props.length; pi++) {
+                    listHtml += '<div class="sha-css-prop-item" data-prop="' + props[pi] + '" tabindex="-1">' +
+                        '<span class="sha-css-prop-name">' + props[pi] + '</span>' +
+                        '</div>';
+                }
+                listHtml += '</div>';
             }
+
+            html += '<div class="sha-css-prop-overlay">';
+            html += '<div class="sha-css-prop-modal">';
+            html += '<div class="sha-css-prop-header">';
+            html += '<h3>Add CSS Property</h3>';
+            html += '<button class="sha-css-prop-close" title="Close">&times;</button>';
+            html += '</div>';
+            html += '<div class="sha-css-prop-search-wrap">';
+            html += '<svg class="sha-css-prop-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+            html += '<input type="text" class="sha-css-prop-search" placeholder="Search CSS properties..." autocomplete="off" />';
+            html += '</div>';
+            html += '<div class="sha-css-prop-list">' + listHtml + '</div>';
+            html += '<div class="sha-css-prop-value-wrap">';
+            html += '<div class="sha-css-prop-value-header">Value</div>';
+            html += '<input type="text" class="sha-css-prop-value" placeholder="Enter CSS value..." disabled spellcheck="false" />';
+            html += '</div>';
+            html += '<div class="sha-css-prop-footer">';
+            html += '<button class="sha-btn sha-btn-cancel sha-css-prop-cancel">Cancel</button>';
+            html += '<button class="sha-btn sha-btn-primary sha-css-prop-apply" disabled>Apply</button>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+
+            var $overlay = $(html);
+            $('body').append($overlay);
+
+            // Trigger enter animation
+            requestAnimationFrame(function () {
+                $overlay.addClass('active');
+            });
+
+            // Focus search after animation
+            setTimeout(function () {
+                $overlay.find('.sha-css-prop-search').focus();
+            }, 200);
+
+            var selectedProp = null;
+
+            // === FILTER ON SEARCH ===
+            $overlay.on('input', '.sha-css-prop-search', function () {
+                var q = $(this).val().toLowerCase().trim();
+
+                if (!q) {
+                    $overlay.find('.sha-css-prop-category').show();
+                    $overlay.find('.sha-css-prop-item').show();
+                    $overlay.find('.sha-css-prop-cat-label').show();
+                    return;
+                }
+
+                $overlay.find('.sha-css-prop-item').each(function () {
+                    var name = $(this).data('prop').toLowerCase();
+                    $(this).toggle(name.indexOf(q) !== -1);
+                });
+
+                $overlay.find('.sha-css-prop-category').each(function () {
+                    var $cat = $(this);
+                    var visible = $cat.find('.sha-css-prop-item:visible').length > 0;
+                    $cat.toggle(visible);
+                });
+            });
+
+            // === SELECT PROPERTY ===
+            $overlay.on('click', '.sha-css-prop-item', function () {
+                $overlay.find('.sha-css-prop-item').removeClass('selected');
+                $(this).addClass('selected');
+                selectedProp = $(this).data('prop');
+                $overlay.find('.sha-css-prop-value').prop('disabled', false).focus().val('');
+                $overlay.find('.sha-css-prop-apply').prop('disabled', false);
+                $overlay.find('.sha-css-prop-search').val(selectedProp);
+                // Reset list to show all
+                $overlay.find('.sha-css-prop-item').show();
+                $overlay.find('.sha-css-prop-category').show();
+                $overlay.find('.sha-css-prop-cat-label').show();
+            });
+
+            // === APPLY ===
+            $overlay.on('click', '.sha-css-prop-apply', function () {
+                if (!selectedProp) return;
+                var val = $overlay.find('.sha-css-prop-value').val().trim();
+                if (!val) {
+                    $overlay.find('.sha-css-prop-value').focus();
+                    return;
+                }
+                self.updateElementCSS(selectedProp, val);
+                var sel = self.state.selectedElement;
+                if (sel) {
+                    if (!sel.explicitCSS) sel.explicitCSS = {};
+                    sel.explicitCSS[selectedProp] = val;
+                    self.displayElementProperties(sel);
+                }
+                $overlay.remove();
+                $(document).off('.sha-css-prop');
+            });
+
+            // === CANCEL / CLOSE ===
+            $overlay.on('click', '.sha-css-prop-cancel, .sha-css-prop-close', function () {
+                $overlay.remove();
+                $(document).off('.sha-css-prop');
+            });
+
+            // Close on overlay backdrop click
+            $overlay.on('click', function (e) {
+                if (e.target === this) {
+                    $overlay.remove();
+                    $(document).off('.sha-css-prop');
+                }
+            });
+
+            // === KEYBOARD NAVIGATION ===
+            $overlay.on('keydown', '.sha-css-prop-search', function (e) {
+                var $items = $overlay.find('.sha-css-prop-item:visible');
+                var $sel = $overlay.find('.sha-css-prop-item.selected');
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    var idx = $items.index($sel);
+                    var next = Math.min(idx + 1, $items.length - 1);
+                    $items.removeClass('selected').eq(next).addClass('selected');
+                    $items.eq(next)[0].scrollIntoView({ block: 'nearest' });
+                    selectedProp = $items.eq(next).data('prop');
+                    $overlay.find('.sha-css-prop-value').prop('disabled', false).val('');
+                    $overlay.find('.sha-css-prop-apply').prop('disabled', false);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    var idx2 = $items.index($sel);
+                    var prev = Math.max(idx2 - 1, 0);
+                    $items.removeClass('selected').eq(prev).addClass('selected');
+                    $items.eq(prev)[0].scrollIntoView({ block: 'nearest' });
+                    selectedProp = $items.eq(prev).data('prop');
+                    $overlay.find('.sha-css-prop-value').prop('disabled', false).val('');
+                    $overlay.find('.sha-css-prop-apply').prop('disabled', false);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var $selItem = $overlay.find('.sha-css-prop-item.selected');
+                    if ($selItem.length) {
+                        $selItem.trigger('click');
+                    } else if ($items.length === 1) {
+                        $items.first().trigger('click');
+                    } else if ($(this).val().trim()) {
+                        selectedProp = $(this).val().trim();
+                        $overlay.find('.sha-css-prop-value').prop('disabled', false).focus().val('');
+                        $overlay.find('.sha-css-prop-apply').prop('disabled', false);
+                    }
+                }
+            });
+
+            // Enter in value input triggers apply
+            $overlay.on('keydown', '.sha-css-prop-value', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    $overlay.find('.sha-css-prop-apply').trigger('click');
+                }
+            });
+
+            // Escape to close
+            $(document).on('keydown.sha-css-prop', function (e) {
+                if (e.key === 'Escape') {
+                    $overlay.remove();
+                    $(document).off('.sha-css-prop');
+                }
+            });
         },
 
         showAddAttributeDialog: function () {
@@ -499,10 +1087,13 @@
 
             this.$attrPanel.find('.sha-attr-del').on('click', function () {
                 var key = $(this).data('attr');
-                if (confirm('Remove attribute "' + key + '"?')) {
-                    self.updateElementAttr(key, '');
-                    $(this).closest('.sha-field-group').remove();
-                }
+                var $group = $(this).closest('.sha-field-group');
+                self.confirmDialog('Remove attribute "' + key + '"?', function (confirmed) {
+                    if (confirmed) {
+                        self.updateElementAttr(key, '');
+                        $group.remove();
+                    }
+                });
             });
 
             this.$attrPanel.find('.sha-btn-add-attr').on('click', function () {
@@ -566,7 +1157,6 @@
             var selector = this.state.currentSelector;
             if (!selector) return;
 
-            // Store in state overrides (used for preview rendering)
             if (!this.state.overrides[selector]) {
                 this.state.overrides[selector] = {};
             }
@@ -617,6 +1207,80 @@
             setTimeout(function () {
                 self.postToIframe({ type: 'refresh-selected' });
             }, 80);
+        },
+
+        resetElementCSS: function (prop) {
+            this.postToIframe({ type: 'update-style', prop: prop, value: '' });
+
+            var selector = this.state.currentSelector;
+            if (!selector || !this.state.overrides[selector]) return;
+
+            delete this.state.overrides[selector][prop];
+            var hasProps = false;
+            for (var k in this.state.overrides[selector]) { hasProps = true; break; }
+            if (!hasProps) delete this.state.overrides[selector];
+
+            this.syncOverridesToCSS();
+            this.markDirty();
+        },
+
+        updateElementPseudoCSS: function (pseudoClass, prop, value) {
+            var baseSel = this.state.currentSelector;
+            if (!baseSel) return;
+            var fullSelector = baseSel + ':' + pseudoClass;
+
+            if (!this.state.overrides[fullSelector]) {
+                this.state.overrides[fullSelector] = {};
+            }
+            this.state.overrides[fullSelector][prop] = value;
+
+            this.syncOverridesToCSS();
+            this.injectPseudoStyles();
+            this.markDirty();
+        },
+
+        resetElementPseudoCSS: function (pseudoClass, prop) {
+            var baseSel = this.state.currentSelector;
+            if (!baseSel) return;
+            var fullSelector = baseSel + ':' + pseudoClass;
+            if (!this.state.overrides[fullSelector]) return;
+
+            delete this.state.overrides[fullSelector][prop];
+            var hasProps = false;
+            for (var k in this.state.overrides[fullSelector]) { hasProps = true; break; }
+            if (!hasProps) delete this.state.overrides[fullSelector];
+
+            this.syncOverridesToCSS();
+            this.injectPseudoStyles();
+            this.markDirty();
+        },
+
+        injectPseudoStyles: function () {
+            try {
+                var iframe = this.$previewFrame[0];
+                if (!iframe || !iframe.contentDocument) return;
+                var doc = iframe.contentDocument;
+                var old = doc.getElementById('sha-pseudo-injected');
+                if (old) old.remove();
+
+                var css = '';
+                for (var sel in this.state.overrides) {
+                    if (sel.indexOf(':') === -1) continue;
+                    var props = this.state.overrides[sel];
+                    css += sel + ' { ';
+                    for (var p in props) {
+                        css += p + ': ' + props[p] + ' !important; ';
+                    }
+                    css += '} ';
+                }
+
+                if (css) {
+                    var style = doc.createElement('style');
+                    style.id = 'sha-pseudo-injected';
+                    style.textContent = css;
+                    doc.head.appendChild(style);
+                }
+            } catch (e) {}
         },
 
         /* ===================================================
@@ -681,14 +1345,46 @@
         },
 
         /* ===================================================
+               MODAL & LOADING
+               =================================================== */
+        showModal: function (message, title) {
+            this.$modalMessage.html(message);
+            if (title) this.$modalOverlay.find('#sha-modal-title').text(title);
+            this.$modalOverlay.fadeIn(150);
+            this.$modalConfirm.show();
+        },
+
+        hideModal: function () {
+            this.$modalOverlay.fadeOut(120);
+        },
+
+        confirmDialog: function (message, callback) {
+            this._modalCallback = callback;
+            this.showModal(message);
+        },
+
+        startLoading: function () {
+            this.$loadingOverlay.addClass('active');
+        },
+
+        stopLoading: function () {
+            this.$loadingOverlay.removeClass('active');
+        },
+
+        /* ===================================================
                CLOSE HANDLER
                =================================================== */
         handleClose: function (e) {
             if (this.state.isDirty) {
-                if (!confirm(shaBuilder.strings.unsaved)) {
-                    e.preventDefault();
-                    return false;
-                }
+                e.preventDefault();
+                var href = this.$closeBtn.attr('href');
+                var self = this;
+                this.confirmDialog(shaBuilder.strings.unsaved, function (confirmed) {
+                    if (confirmed && href) {
+                        window.location.href = href;
+                    }
+                });
+                return false;
             }
             return true;
         },
@@ -716,6 +1412,22 @@
 
         escapeRegex: function (str) {
             return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        },
+
+        splitCSSValue: function (val, defaultUnit) {
+            defaultUnit = defaultUnit || 'px';
+            if (!val) return { num: '', unit: defaultUnit };
+            var m = String(val).match(/^(-?[\d.]+)\s*(px|em|rem|%|vh|vw|vmin|vmax|ch|ex|cm|mm|in|pt|pc)?$/i);
+            if (m) return { num: m[1], unit: (m[2] || '').toLowerCase() };
+            return { num: val, unit: defaultUnit };
+        },
+
+        toHexColor: function (val) {
+            if (!val || typeof val !== 'string') return '#000000';
+            var hex = val.trim();
+            if (/^#[0-9a-f]{6}$/i.test(hex)) return hex.toLowerCase();
+            if (/^#[0-9a-f]{3}$/i.test(hex)) return '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+            return null;
         },
 
         /* ===================================================
