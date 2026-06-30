@@ -470,6 +470,17 @@ html.sha-builder-active body {
     background: rgba(240, 131, 58, 0.08);
 }
 
+/* Group labels in property panel */
+.sha-prop-group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f0833a;
+    padding: 8px 16px 2px;
+    margin-top: 4px;
+}
+
 /* Section titles in property panel */
 #properties-panel h4,
 #attributes-panel h4 {

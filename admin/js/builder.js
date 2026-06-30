@@ -258,21 +258,87 @@
             propHtml += '<input type="text" class="sha-text-input" value="' + this.escAttr(data.textContent) + '" />';
             propHtml += '</div>';
 
-            // Explicit CSS properties — only what is directly set on this element
-            var explicitKeys = Object.keys(data.explicitCSS);
+            // === FIXED 20 CSS PROPERTIES (always shown) ===
+            var computedRef = data.computedRef || {};
+            var explicit = data.explicitCSS || {};
+            var fixedProps = [
+                // Text / Typography
+                { prop: 'color',           label: 'Color',                group: 'Text' },
+                { prop: 'font-family',     label: 'Font Family',         group: 'Text' },
+                { prop: 'font-size',       label: 'Font Size',           group: 'Text' },
+                { prop: 'font-weight',     label: 'Font Weight',         group: 'Text' },
+                { prop: 'text-align',      label: 'Text Align',          group: 'Text' },
+                { prop: 'line-height',     label: 'Line Height',         group: 'Text' },
+                { prop: 'letter-spacing',  label: 'Letter Spacing',      group: 'Text' },
+                { prop: 'text-transform',  label: 'Text Transform',      group: 'Text' },
+                // Background
+                { prop: 'background-color', label: 'Background Color',  group: 'Background' },
+                // Spacing
+                { prop: 'margin-top',      label: 'Margin Top',          group: 'Margin' },
+                { prop: 'margin-right',    label: 'Margin Right',        group: 'Margin' },
+                { prop: 'margin-bottom',   label: 'Margin Bottom',       group: 'Margin' },
+                { prop: 'margin-left',     label: 'Margin Left',         group: 'Margin' },
+                { prop: 'padding-top',     label: 'Padding Top',         group: 'Padding' },
+                { prop: 'padding-right',   label: 'Padding Right',       group: 'Padding' },
+                { prop: 'padding-bottom',  label: 'Padding Bottom',      group: 'Padding' },
+                { prop: 'padding-left',    label: 'Padding Left',        group: 'Padding' },
+                // Border
+                { prop: 'border-radius',   label: 'Border Radius',       group: 'Border' },
+                // Layout / Other
+                { prop: 'display',         label: 'Display',             group: 'Layout' },
+                { prop: 'opacity',         label: 'Opacity',             group: 'Effects' },
+            ];
 
-            propHtml += '<h4>CSS Properties <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a8aaa;">(edit to override inherited)</span></h4>';
+            propHtml += '<h4>Element Styles</h4>';
 
-            if (explicitKeys.length > 0) {
-                for (var i = 0; i < explicitKeys.length; i++) {
-                    var p = explicitKeys[i];
-                    propHtml += '<div class="sha-field-group">';
-                    propHtml += '<label>' + this.escHtml(p) + '</label>';
-                    propHtml += '<input type="text" class="sha-css-input" data-prop="' + this.escAttr(p) + '" value="' + this.escAttr(data.explicitCSS[p]) + '" />';
-                    propHtml += '</div>';
+            var currentGroup = '';
+            for (var fi = 0; fi < fixedProps.length; fi++) {
+                var fp = fixedProps[fi];
+                // Group header
+                if (fp.group !== currentGroup) {
+                    currentGroup = fp.group;
+                    propHtml += '<div class="sha-prop-group-label">' + this.escHtml(currentGroup) + '</div>';
                 }
-            } else {
-                propHtml += '<div class="sha-panel-placeholder" style="padding:16px;"><p>No explicit styles — this element inherits all values.</p></div>';
+
+                // Pre-fill from explicitCSS (what's set on this element), else empty
+                var val = (explicit[fp.prop] !== undefined) ? explicit[fp.prop] : '';
+                propHtml += '<div class="sha-field-group">';
+                propHtml += '<label>' + this.escHtml(fp.label) + '</label>';
+                propHtml += '<input type="text" class="sha-css-input" data-prop="' + this.escAttr(fp.prop) + '" value="' + this.escAttr(val) + '" placeholder="' + this.escAttr(fp.label) + '" />';
+                propHtml += '</div>';
+            }
+
+            propHtml += '<div class="sha-new-attr-row">';
+            propHtml += '<button class="sha-btn sha-btn-add-attr sha-btn-add-prop">+ Add CSS Property</button>';
+            propHtml += '</div>';
+
+            // === INHERITED VALUES (collapsible) ===
+            var explicitKeys = Object.keys(explicit);
+            var computedKeys = Object.keys(computedRef);
+            var inheritedKeys = [];
+            for (var ci = 0; ci < computedKeys.length; ci++) {
+                var cp = computedKeys[ci];
+                if (explicitKeys.indexOf(cp) === -1) {
+                    inheritedKeys.push(cp);
+                }
+            }
+
+            if (inheritedKeys.length > 0) {
+                propHtml += '<h4 class="sha-inherited-toggle" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;">';
+                propHtml += '<span>Inherited Values</span>';
+                propHtml += '<span class="sha-toggle-icon" style="font-size:16px;font-weight:400;">+</span>';
+                propHtml += '</h4>';
+                propHtml += '<div class="sha-inherited-body" style="display:none;">';
+                for (var ci2 = 0; ci2 < inheritedKeys.length; ci2++) {
+                    var ip = inheritedKeys[ci2];
+                    if (computedRef[ip]) {
+                        propHtml += '<div class="sha-field-group" style="opacity:0.65;">';
+                        propHtml += '<label>' + this.escHtml(ip) + ' <span style="color:#6c6c8a;font-weight:400;text-transform:none;">(inherited)</span></label>';
+                        propHtml += '<input type="text" class="sha-css-input sha-computed" data-prop="' + this.escAttr(ip) + '" value="' + this.escAttr(computedRef[ip]) + '" readonly style="cursor:default;opacity:0.7;" />';
+                        propHtml += '</div>';
+                    }
+                }
+                propHtml += '</div>';
             }
 
             propHtml += '<div class="sha-new-attr-row">';
@@ -333,6 +399,13 @@
             // Add CSS property button
             this.$propPanel.find('.sha-btn-add-prop').on('click', function () {
                 self.showAddCSSPropertyDialog();
+            });
+
+            // Inherited values toggle
+            this.$propPanel.find('.sha-inherited-toggle').on('click', function () {
+                var body = $(this).next('.sha-inherited-body');
+                body.slideToggle(150);
+                $(this).find('.sha-toggle-icon').text(body.is(':visible') ? '\u2212' : '+');
             });
 
             // Add attribute button
@@ -499,13 +572,8 @@
             }
             this.state.overrides[selector][prop] = value;
 
-            // 1. Try direct replace in CSS textarea (works for existing CSS properties)
-            var cssText = this.$cssInput.val();
-            var directRegex = new RegExp('(' + this.escapeRegex(prop) + '\\s*:\\s*)[^;]+(\\s*;)', 'gi');
-            var newCss = cssText.replace(directRegex, '$1' + value + ' !important;');
-            var changed = (newCss !== cssText);
-
-            // 2. Always sync override block to ensure persistence
+            // Sync override block to ensure persistence (no direct edit of user's CSS)
+            var newCss = this.$cssInput.val();
             var marker = '/* === SHA BUILDER OVERRIDES === */';
             var markerIdx = newCss.indexOf(marker);
             var ruleLine = selector + ' { ' + prop + ': ' + value + ' !important; }';
