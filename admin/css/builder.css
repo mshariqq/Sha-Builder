@@ -1,0 +1,527 @@
+/* === SHA BUILDER — ADMIN BUILDER CSS === */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html.sha-builder-active,
+html.sha-builder-active body {
+    height: 100%;
+    overflow: hidden;
+}
+
+.sha-builder-body {
+    background: #1e1e2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* === WRAPPER === */
+.sha-builder-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #1e1e2e;
+}
+
+/* === TOP BAR === */
+.sha-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 16px;
+    background: #0f0f1a;
+    border-bottom: 1px solid #2a2a3e;
+    z-index: 100;
+}
+
+.sha-top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sha-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f0833a;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+}
+
+.sha-logo-text {
+    color: #f0833a;
+}
+
+.sha-page-title {
+    color: #b0b0c8;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 10px;
+    background: #252540;
+    border-radius: 4px;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sha-post-id {
+    color: #6c6c8a;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.sha-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* === BUTTONS === */
+.sha-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    line-height: 1;
+}
+
+.sha-btn svg {
+    flex-shrink: 0;
+}
+
+.sha-btn-primary {
+    background: #f0833a;
+    color: #fff;
+}
+
+.sha-btn-primary:hover {
+    background: #d9732e;
+}
+
+.sha-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sha-btn-render {
+    background: #2a2a4a;
+    color: #b0b0d0;
+    border: 1px solid #3a3a5a;
+}
+
+.sha-btn-render:hover {
+    background: #3a3a5a;
+    color: #e0e0f0;
+}
+
+.sha-btn-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: transparent;
+    color: #6c6c8a;
+    border-radius: 6px;
+    font-size: 20px;
+}
+
+.sha-btn-close:hover {
+    background: #2a2a4a;
+    color: #ff6b6b;
+}
+
+/* === BUILDER CONTENT LAYOUT === */
+.sha-builder-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* === LEFT PANEL === */
+.sha-left-panel {
+    display: flex;
+    flex-direction: column;
+    width: 380px;
+    min-width: 320px;
+    max-width: 45%;
+    background: #1a1a2e;
+    border-right: 1px solid #2a2a3e;
+    overflow: hidden;
+}
+
+/* Tabs */
+.sha-tabs {
+    display: flex;
+    background: #141425;
+    border-bottom: 1px solid #2a2a3e;
+    flex-shrink: 0;
+}
+
+.sha-tab-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #7c7c9a;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sha-tab-btn:hover {
+    color: #b0b0d0;
+    background: #1a1a30;
+}
+
+.sha-tab-btn.active {
+    color: #f0833a;
+    border-bottom-color: #f0833a;
+    background: #1a1a2e;
+}
+
+/* Panel scroll area */
+.sha-panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sha-panel-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sha-panel-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sha-panel-scroll::-webkit-scrollbar-thumb {
+    background: #3a3a5a;
+    border-radius: 3px;
+}
+
+.sha-panel-scroll::-webkit-scrollbar-thumb:hover {
+    background: #4a4a6a;
+}
+
+.sha-panel-content {
+    display: none;
+    padding: 0;
+}
+
+.sha-panel-content.active {
+    display: block;
+}
+
+/* === CODE EDITOR === */
+.sha-code-section {
+    border-bottom: 1px solid #2a2a3e;
+}
+
+.sha-code-section:last-child {
+    border-bottom: none;
+}
+
+.sha-code-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #16162a;
+    border-bottom: 1px solid #2a2a3e;
+}
+
+.sha-code-lang {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.sha-code-lang.html {
+    color: #e44d26;
+    background: rgba(228, 77, 38, 0.12);
+}
+
+.sha-code-lang.css {
+    color: #264de4;
+    background: rgba(38, 77, 228, 0.12);
+}
+
+.sha-code-lang.js {
+    color: #f7df1e;
+    background: rgba(247, 223, 30, 0.12);
+}
+
+.sha-code-editor {
+    width: 100%;
+    min-height: 160px;
+    padding: 14px 16px;
+    background: #12121e;
+    border: none;
+    color: #d4d4e4;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    resize: vertical;
+    tab-size: 4;
+    outline: none;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+}
+
+.sha-code-editor:focus {
+    background: #0e0e1a;
+    box-shadow: inset 0 0 0 1px #f0833a40;
+}
+
+.sha-code-editor::placeholder {
+    color: #4a4a6a;
+}
+
+.sha-code-editor.html { border-left: 2px solid #e44d26; }
+.sha-code-editor.css { border-left: 2px solid #264de4; }
+.sha-code-editor.js { border-left: 2px solid #f7df1e; }
+
+/* === PROPERTIES & ATTRIBUTES PANELS === */
+.sha-panel-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    color: #6c6c8a;
+    gap: 12px;
+}
+
+.sha-panel-placeholder p {
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 240px;
+}
+
+.sha-element-info {
+    padding: 16px;
+    background: #16162a;
+    border-bottom: 1px solid #2a2a3e;
+}
+
+.sha-element-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.sha-tag {
+    color: #f0833a;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: 700;
+}
+
+.sha-field-group {
+    padding: 10px 16px;
+    border-bottom: 1px solid #252540;
+}
+
+.sha-field-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #8a8aaa;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.sha-field-group .sha-text-input,
+.sha-field-group .sha-css-input,
+.sha-field-group .sha-attr-input {
+    width: 100%;
+    padding: 7px 10px;
+    background: #12121e;
+    border: 1px solid #2a2a4a;
+    border-radius: 4px;
+    color: #d4d4e4;
+    font-size: 12px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.sha-field-group .sha-text-input:focus,
+.sha-field-group .sha-css-input:focus,
+.sha-field-group .sha-attr-input:focus {
+    border-color: #f0833a;
+    box-shadow: 0 0 0 2px rgba(240, 131, 58, 0.15);
+}
+
+.sha-field-group .sha-text-input {
+    font-family: inherit;
+}
+
+/* Section titles in property panel */
+#properties-panel h4,
+#attributes-panel h4 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6c6c8a;
+    padding: 10px 16px 6px;
+    margin: 0;
+    background: #141425;
+    border-top: 1px solid #2a2a3e;
+    border-bottom: 1px solid #2a2a3e;
+}
+
+/* === RIGHT PANEL === */
+.sha-right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #e8e8ec;
+    overflow: hidden;
+}
+
+.sha-preview-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 6px 16px;
+    background: #d8d8e0;
+    border-bottom: 1px solid #c8c8d0;
+    flex-shrink: 0;
+}
+
+.sha-preview-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c6c8a;
+}
+
+.sha-preview-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.sha-preview-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #ffffff;
+}
+
+/* === NOTICES === */
+.sha-notice {
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    z-index: 9999;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    animation: sha-slide-in 0.3s ease;
+    max-width: 360px;
+}
+
+.sha-notice-success {
+    background: #1b5e20;
+    color: #c8e6c9;
+    border: 1px solid #2e7d32;
+}
+
+.sha-notice-error {
+    background: #b71c1c;
+    color: #ffcdd2;
+    border: 1px solid #c62828;
+}
+
+@keyframes sha-slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* === UNSAVED CHANGES DOT === */
+.sha-dirty-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #f0833a;
+    border-radius: 50%;
+    animation: sha-pulse 1.5s infinite;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+@keyframes sha-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 960px) {
+    .sha-left-panel {
+        width: 300px;
+        min-width: 260px;
+    }
+}
+
+@media (max-width: 782px) {
+    .sha-left-panel {
+        width: 100%;
+        max-width: 100%;
+        max-height: 50vh;
+        border-right: none;
+        border-bottom: 1px solid #2a2a3e;
+    }
+    .sha-builder-content {
+        flex-direction: column;
+    }
+    .sha-page-title {
+        max-width: 140px;
+    }
+}

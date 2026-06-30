@@ -1,0 +1,13 @@
+/* === SHA BUILDER — FRONTEND === */
+.sha-builder-content-area {
+    width: 100%;
+    max-width: 100%;
+}
+
+.sha-builder-content-area > *:first-child {
+    margin-top: 0;
+}
+
+.sha-builder-content-area > *:last-child {
+    margin-bottom: 0;
+}
