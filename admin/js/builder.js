@@ -300,14 +300,18 @@
                 'body{padding-bottom:240px!important;min-height:100vh;}'
             ].join('');
 
+            var gCss = typeof shaBuilderGlobals !== 'undefined' ? (shaBuilderGlobals.globalCss || '') : '';
+            var gJs  = typeof shaBuilderGlobals !== 'undefined' ? (shaBuilderGlobals.globalJs  || '') : '';
+
             return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
-                + '<style>' + inspectorCSS + css + '</style>'
+                + '<style>' + inspectorCSS + (gCss ? '\n' + gCss : '') + '\n' + css + '</style>'
                 + '</head><body>'
                 + html
                 + '<div id="sha-inspector-overlay"></div>'
                 + '<div id="sha-selected-overlay"></div>'
                 + '<script>' + inspectorScript + '<\/script>'
-                + (js ? '<script>' + js + '<\/script>' : '')
+                + (gJs  ? '<script>' + gJs + '<\/script>' : '')
+                + (js   ? '<script>' + js  + '<\/script>' : '')
                 + '</body></html>';
         },
 

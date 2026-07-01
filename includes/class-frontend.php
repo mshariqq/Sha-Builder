@@ -8,7 +8,9 @@ class Sha_Builder_Frontend {
     public function __construct() {
         add_filter('the_content', array($this, 'render_frontend_html'), 999);
         add_action('wp_head', array($this, 'render_frontend_css'), 999);
+        add_action('wp_head', array($this, 'render_global_css'), 1);
         add_action('wp_footer', array($this, 'render_frontend_js'), 999);
+        add_action('wp_footer', array($this, 'render_global_js'), 1);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         add_filter('wp_kses_allowed_html', array($this, 'allow_builder_tags'), 10, 2);
 
@@ -126,6 +128,26 @@ class Sha_Builder_Frontend {
             'class' => true,
         );
         return $allowed;
+    }
+
+    public function render_global_css() {
+        if (defined('SHA_BUILDER_IS_BUILDER')) {
+            return;
+        }
+        $css = get_option('sha_builder_global_css', '');
+        if (!empty($css)) {
+            echo "\n<style id=\"sha-builder-global-css\">\n" . $css . "\n</style>\n";
+        }
+    }
+
+    public function render_global_js() {
+        if (defined('SHA_BUILDER_IS_BUILDER')) {
+            return;
+        }
+        $js = get_option('sha_builder_global_js', '');
+        if (!empty($js)) {
+            echo "\n<script id=\"sha-builder-global-js\">\n" . $js . "\n</script>\n";
+        }
     }
 
     public function add_page_templates($templates) {

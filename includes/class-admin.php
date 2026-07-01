@@ -159,11 +159,22 @@ class Sha_Builder_Admin {
             'edit_posts',
             'edit.php?post_type=sha_footer'
         );
+
+        add_submenu_page(
+            'sha-builder',
+            __('Globals', 'sha-builder'),
+            __('Globals', 'sha-builder'),
+            'manage_options',
+            'sha-builder-globals',
+            array($this, 'render_globals_page')
+        );
     }
 
     public function register_settings() {
         register_setting('sha_builder_settings', 'sha_builder_active_header', 'intval');
         register_setting('sha_builder_settings', 'sha_builder_active_footer', 'intval');
+        register_setting('sha_builder_globals_settings', 'sha_builder_global_css');
+        register_setting('sha_builder_globals_settings', 'sha_builder_global_js');
     }
 
     public function render_config_page() {
@@ -171,6 +182,13 @@ class Sha_Builder_Admin {
             wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
         }
         include SHA_BUILDER_PATH . 'admin/templates/config-page.php';
+    }
+
+    public function render_globals_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
+        }
+        include SHA_BUILDER_PATH . 'admin/templates/globals-page.php';
     }
 
     public function add_builder_page_fallback() {
@@ -200,6 +218,10 @@ class Sha_Builder_Admin {
         }
         if (!current_user_can('edit_post', $post_id)) {
             wp_die(__('Permission denied.', 'sha-builder'), 403);
+        }
+
+        if (!defined('SHA_BUILDER_IS_BUILDER')) {
+            define('SHA_BUILDER_IS_BUILDER', true);
         }
 
         while (ob_get_level()) {
@@ -238,11 +260,13 @@ class Sha_Builder_Admin {
         );
 
         wp_localize_script('sha-builder-builder', 'shaBuilder', array(
-            'ajaxUrl'  => admin_url('admin-ajax.php'),
-            'nonce'    => wp_create_nonce('sha_builder_nonce'),
-            'postId'   => $post_id,
-            'closeUrl' => admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))),
-            'strings'  => array(
+            'ajaxUrl'   => admin_url('admin-ajax.php'),
+            'nonce'     => wp_create_nonce('sha_builder_nonce'),
+            'postId'    => $post_id,
+            'closeUrl'  => admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))),
+            'globalCss' => get_option('sha_builder_global_css', ''),
+            'globalJs'  => get_option('sha_builder_global_js', ''),
+            'strings'   => array(
                 'saveSuccess' => __('Page saved successfully!', 'sha-builder'),
                 'saveError'   => __('Error saving page. Please try again.', 'sha-builder'),
                 'saving'      => __('Saving...', 'sha-builder'),

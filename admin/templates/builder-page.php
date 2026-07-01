@@ -11,6 +11,12 @@ if (!defined('ABSPATH')) {
     <?php wp_head(); ?>
     <?php wp_print_styles('sha-builder-builder'); ?>
     <?php wp_print_scripts('jquery'); ?>
+    <script>
+    var shaBuilderGlobals = {
+        globalCss: <?php echo wp_json_encode(get_option('sha_builder_global_css', '')); ?>,
+        globalJs:  <?php echo wp_json_encode(get_option('sha_builder_global_js', '')); ?>
+    };
+    </script>
     <style>
         html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#1e1e2e}
         *,:before,:after{box-sizing:border-box}

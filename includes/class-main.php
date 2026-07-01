@@ -100,6 +100,10 @@ class Sha_Builder_Main {
             wp_die(__('Permission denied.', 'sha-builder'), 403);
         }
 
+        if (!defined('SHA_BUILDER_IS_BUILDER')) {
+            define('SHA_BUILDER_IS_BUILDER', true);
+        }
+
         $this->send_security_headers();
 
         $saved_data = get_post_meta($post_id, '_sha_builder_data', true);
@@ -138,6 +142,8 @@ class Sha_Builder_Main {
             'postId'      => $post_id,
             'closeUrl'    => wp_nonce_url(admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))), 'sha_builder_close'),
             'closeNonce'  => wp_create_nonce('sha_builder_close'),
+            'globalCss'   => get_option('sha_builder_global_css', ''),
+            'globalJs'    => get_option('sha_builder_global_js', ''),
             'strings'     => array(
                 'saveSuccess' => __('Page saved successfully!', 'sha-builder'),
                 'saveError'   => __('Error saving page. Please try again.', 'sha-builder'),
