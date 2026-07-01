@@ -1211,6 +1211,7 @@
             this.markDirty();
             var self = this;
             setTimeout(function () {
+                self.syncHtmlFromIframe();
                 self.postToIframe({ type: 'refresh-selected' });
             }, 80);
         },
