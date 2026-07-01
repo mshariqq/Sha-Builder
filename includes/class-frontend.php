@@ -8,14 +8,18 @@ class Sha_Builder_Frontend {
     public function __construct() {
         add_filter('the_content', array($this, 'render_frontend_html'), 999);
         add_action('wp_head', array($this, 'render_frontend_css'), 999);
-        add_action('wp_head', array($this, 'render_global_css'), 1);
         add_action('wp_footer', array($this, 'render_frontend_js'), 999);
-        add_action('wp_footer', array($this, 'render_global_js'), 1);
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_globals'));
         add_filter('wp_kses_allowed_html', array($this, 'allow_builder_tags'), 10, 2);
 
         add_filter('theme_page_templates', array($this, 'add_page_templates'));
         add_filter('template_include', array($this, 'handle_page_template'), 999);
+
+        add_action('add_option_sha_builder_global_css', array($this, 'regenerate_global_files'));
+        add_action('update_option_sha_builder_global_css', array($this, 'regenerate_global_files'));
+        add_action('add_option_sha_builder_global_js', array($this, 'regenerate_global_files'));
+        add_action('update_option_sha_builder_global_js', array($this, 'regenerate_global_files'));
     }
 
     public function has_builder_content($post_id = null) {
@@ -130,23 +134,102 @@ class Sha_Builder_Frontend {
         return $allowed;
     }
 
-    public function render_global_css() {
-        if (defined('SHA_BUILDER_IS_BUILDER')) {
-            return;
+    public function sha_get_upload_dir($subdir = 'sha-builder') {
+        $upload_dir = wp_upload_dir();
+        $dir = trailingslashit($upload_dir['basedir']) . $subdir;
+        if (!file_exists($dir)) {
+            wp_mkdir_p($dir);
         }
-        $css = get_option('sha_builder_global_css', '');
-        if (!empty($css)) {
-            echo "\n<style id=\"sha-builder-global-css\">\n" . $css . "\n</style>\n";
-        }
+        return trailingslashit($dir);
     }
 
-    public function render_global_js() {
+    public function sha_get_upload_url($subdir = 'sha-builder') {
+        $upload_dir = wp_upload_dir();
+        return trailingslashit($upload_dir['baseurl']) . $subdir;
+    }
+
+    public function regenerate_global_files() {
+        $upload_dir = $this->sha_get_upload_dir();
+
+        $css = get_option('sha_builder_global_css', '');
+        $js  = get_option('sha_builder_global_js', '');
+
+        if (!empty($css)) {
+            $min_css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
+            $min_css = preg_replace('/\s+/', ' ', $min_css);
+            $min_css = preg_replace('/\s*([{}:;,])\s*/', '$1', $min_css);
+            $min_css = trim($min_css);
+            $written = (bool) file_put_contents($upload_dir . 'global.css', $min_css);
+        } else {
+            if (file_exists($upload_dir . 'global.css')) {
+                unlink($upload_dir . 'global.css');
+            }
+            $written = true;
+        }
+
+        if (!empty($js)) {
+            $min_js = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $js);
+            $min_js = preg_replace('/^\s*\/\/.*$/m', '', $min_js);
+            $min_js = preg_replace('/\s+/', ' ', $min_js);
+            $min_js = trim($min_js);
+            $js_written = (bool) file_put_contents($upload_dir . 'global.js', $min_js);
+        } else {
+            if (file_exists($upload_dir . 'global.js')) {
+                unlink($upload_dir . 'global.js');
+            }
+            $js_written = true;
+        }
+
+        return $written && $js_written;
+    }
+
+    public function enqueue_globals() {
         if (defined('SHA_BUILDER_IS_BUILDER')) {
             return;
         }
-        $js = get_option('sha_builder_global_js', '');
-        if (!empty($js)) {
-            echo "\n<script id=\"sha-builder-global-js\">\n" . $js . "\n</script>\n";
+
+        $css = get_option('sha_builder_global_css', '');
+        $js  = get_option('sha_builder_global_js', '');
+
+        if (empty($css) && empty($js)) {
+            return;
+        }
+
+        $upload_dir = $this->sha_get_upload_dir();
+        $upload_url = $this->sha_get_upload_url();
+        $css_file   = $upload_dir . 'global.css';
+        $js_file    = $upload_dir . 'global.js';
+
+        // Auto-regenerate if files missing but options have content
+        if (!empty($css) && !file_exists($css_file)) {
+            $this->regenerate_global_files();
+        }
+
+        if (file_exists($css_file) && !empty($css)) {
+            wp_enqueue_style(
+                'sha-builder-global',
+                $upload_url . 'global.css',
+                array(),
+                md5_file($css_file)
+            );
+        } elseif (!empty($css)) {
+            wp_register_style('sha-builder-global-inline', false);
+            wp_enqueue_style('sha-builder-global-inline');
+            wp_add_inline_style('sha-builder-global-inline', $css);
+        }
+
+        if (file_exists($js_file) && !empty($js)) {
+            wp_enqueue_script(
+                'sha-builder-global',
+                $upload_url . 'global.js',
+                array(),
+                md5_file($js_file),
+                true
+            );
+        } elseif (!empty($js)) {
+            wp_register_script('sha-builder-global-inline', false, array(), '', true);
+            wp_enqueue_script('sha-builder-global-inline');
+            wp_add_inline_script('sha-builder-global-inline', $js);
         }
     }
 
