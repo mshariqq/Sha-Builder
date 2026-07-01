@@ -795,7 +795,7 @@ html.sha-builder-active #wpadminbar {
 
 .sha-preview-container {
     flex: 1;
-    overflow: hidden;
+    overflow: auto;
     position: relative;
 }
 
