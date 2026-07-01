@@ -181,6 +181,7 @@ class Sha_Builder_Admin {
         if (!current_user_can('manage_options')) {
             wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
         }
+        $update_info = $this->check_for_update();
         include SHA_BUILDER_PATH . 'admin/templates/config-page.php';
     }
 
@@ -296,5 +297,43 @@ class Sha_Builder_Admin {
             $classes .= ' sha-builder-active';
         }
         return $classes;
+    }
+
+    public function check_for_update() {
+        $transient = 'sha_builder_update_check';
+        $cached = get_transient($transient);
+        if (false !== $cached) {
+            return $cached;
+        }
+
+        $response = wp_remote_get('https://api.github.com/repos/mshariqq/Sha-Builder/releases/latest', array(
+            'timeout' => 10,
+            'headers' => array('Accept' => 'application/vnd.github.v3+json'),
+        ));
+
+        if (is_wp_error($response) || 200 !== wp_remote_retrieve_response_code($response)) {
+            $result = array('has_update' => false, 'new_version' => '', 'url' => '');
+            set_transient($transient, $result, HOUR_IN_SECONDS);
+            return $result;
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($data) || empty($data['tag_name'])) {
+            $result = array('has_update' => false, 'new_version' => '', 'url' => '');
+            set_transient($transient, $result, HOUR_IN_SECONDS);
+            return $result;
+        }
+
+        $remote_version = ltrim($data['tag_name'], 'vV');
+        $has_update = version_compare($remote_version, SHA_BUILDER_VERSION, '>');
+
+        $result = array(
+            'has_update'  => $has_update,
+            'new_version' => $remote_version,
+            'url'         => 'https://github.com/mshariqq/Sha-Builder/releases',
+        );
+
+        set_transient($transient, $result, 6 * HOUR_IN_SECONDS);
+        return $result;
     }
 }

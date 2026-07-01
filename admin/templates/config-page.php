@@ -31,10 +31,23 @@ $plugin_data = get_plugin_data(SHA_BUILDER_FILE, false, false);
 <div class="wrap">
     <h1><?php esc_html_e('SHA BUILDER Config', 'sha-builder'); ?></h1>
 
+    <?php if (!empty($update_info['has_update'])) : ?>
+    <div style="background:linear-gradient(135deg,#1a3a1a 0%,#2a5a2a 100%);border-radius:10px;padding:16px 22px;margin:20px 0;max-width:620px;color:#c8e6c9;border:1px solid rgba(76,175,80,0.3);display:flex;align-items:center;gap:12px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        <div>
+            <strong style="color:#fff;font-size:14px;"><?php esc_html_e('Update Available:', 'sha-builder'); ?> v<?php echo esc_html($update_info['new_version']); ?></strong>
+            <p style="margin:2px 0 0;font-size:12px;color:rgba(255,255,255,0.6);">
+                <?php esc_html_e('A new version of Sha Builder is available.', 'sha-builder'); ?>
+                <a href="<?php echo esc_url($update_info['url']); ?>" target="_blank" rel="noopener noreferrer" style="color:#81c784;text-decoration:underline;font-weight:600;"><?php esc_html_e('Download from GitHub', 'sha-builder'); ?></a>
+            </p>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div style="background:linear-gradient(135deg,#1e1e2e 0%,#2a2a4a 100%);border-radius:12px;padding:28px;margin:24px 0;max-width:620px;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.12);">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
-            <div style="width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#f0833a 0%,#e06b20 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+            <div style="width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid rgba(240,131,58,0.4);box-shadow:0 0 16px rgba(240,131,58,0.15);">
+                <img src="https://mshariqq.github.io/images/dp.webp" alt="" style="width:100%;height:100%;object-fit:cover;">
             </div>
             <div>
                 <h2 style="margin:0;font-size:17px;font-weight:700;color:#fff;">Sha Builder</h2>
@@ -61,6 +74,10 @@ $plugin_data = get_plugin_data(SHA_BUILDER_FILE, false, false);
             <a href="https://www.upwork.com/freelancers/~0142acdc12184086c7" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#108a00;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;transition:opacity 0.2s;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.561 13.158c-1.102 0-2.135-.467-3.074-1.227l.228-.232c.883-.942 1.618-1.533 2.797-1.533.951 0 1.787.377 2.357 1.122.572.749.692 1.739.692 2.356v.514h-1zm1.645-2.606c-.724-.79-1.766-1.162-2.942-1.162-1.424 0-2.79.444-3.978 1.457l.656.753.001-.001c.992-.747 2.063-1.196 3.322-1.196.848 0 1.62.229 2.206.696.483.384.859.914 1.047 1.58-.28-.086-.582-.127-.914-.127h-4.011c-1.345 0-3.014.715-3.014 2.666 0 .398.079.767.233 1.082.387.802 1.228 1.294 2.306 1.294 1.444 0 2.478-.469 3.203-1.066v.002c.288-.237.607-.538.994-.946h1.25v-1.08c-.003-.952-.266-2.067-1.145-2.957l-.009-.009zm-5.443 5.043c-.223-.342-.342-.761-.342-1.193 0-.46.13-.88.381-1.242l.007-.009c.28-.401.691-.679 1.175-.822.314-.092.619-.144.895-.144h3.935c.315 0 .619.047.902.14v.002c.397.131.749.355 1.027.658.355.389.554.868.554 1.417 0 .553-.201 1.038-.563 1.428-.286.307-.648.535-1.054.666-.285.092-.579.139-.866.139H15.97c-.3 0-.602-.045-.89-.139-.423-.138-.801-.381-1.104-.742l-.213-.18zM12 22.886c-4.202 0-7.818-2.648-9.209-6.36L0 8.101C0 4.232 3.582.886 8.001.886h4C16.419.886 20 4.232 20 8.101v.002l-2.791 8.424c-1.393 3.712-5.009 6.359-9.209 6.359zM8.001 2.886c-3.039 0-5.506 2.34-5.506 5.215v.002l2.79 8.424c1.056 2.816 3.842 4.887 6.715 4.887 3.04 0 5.508-2.34 5.508-5.216v-.002l-2.789-8.424c-1.057-2.816-3.842-4.887-6.716-4.887H8.001v.001z"/></svg>
                 Upwork
+            </a>
+            <a href="https://www.youtube.com/channel/UCki-Tnmev4y7Xgp68oFtBbw" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#ff0000;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;transition:opacity 0.2s;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+                YouTube
             </a>
             <a href="<?php echo esc_url($plugin_data['PluginURI']); ?>" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;transition:background 0.2s;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
