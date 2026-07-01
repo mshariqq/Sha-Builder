@@ -145,7 +145,7 @@ class Sha_Builder_Frontend {
 
     public function sha_get_upload_url($subdir = 'sha-builder') {
         $upload_dir = wp_upload_dir();
-        return trailingslashit($upload_dir['baseurl']) . $subdir;
+        return trailingslashit(trailingslashit($upload_dir['baseurl']) . $subdir);
     }
 
     public function regenerate_global_files() {
