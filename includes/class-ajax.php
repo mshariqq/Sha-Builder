@@ -26,7 +26,7 @@ class Sha_Builder_Ajax {
         if (!$post) {
             wp_send_json_error(array('message' => __('Post not found.', 'sha-builder')));
         }
-        if (!in_array($post->post_type, array('page', 'post'), true)) {
+        if (!in_array($post->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
             wp_send_json_error(array('message' => __('Invalid post type.', 'sha-builder')));
         }
         if (!current_user_can('edit_post', $post_id)) {

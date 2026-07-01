@@ -7,8 +7,12 @@ class Sha_Builder_Admin {
 
     public function __construct() {
         add_action('admin_menu', array($this, 'add_builder_page_fallback'));
+        add_action('admin_menu', array($this, 'add_main_admin_menu'), 9);
+        add_action('admin_init', array($this, 'register_settings'));
         add_filter('page_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('post_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
+        add_filter('sha_header_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
+        add_filter('sha_footer_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_action('add_meta_boxes', array($this, 'add_builder_meta_box'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_list_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_edit_screen_script'));
@@ -21,7 +25,7 @@ class Sha_Builder_Admin {
             return $actions;
         }
         $post_type = get_post_type($post);
-        if (!in_array($post_type, array('page', 'post'), true)) {
+        if (!in_array($post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
             return $actions;
         }
         $actions['edit_with_sha'] = sprintf(
@@ -33,7 +37,7 @@ class Sha_Builder_Admin {
     }
 
     public function add_builder_meta_box() {
-        $post_types = array('page', 'post');
+        $post_types = Sha_Builder_Main::get_supported_post_types();
         foreach ($post_types as $pt) {
             add_meta_box(
                 'sha_builder_metabox',
@@ -73,7 +77,7 @@ class Sha_Builder_Admin {
             return;
         }
         $screen = get_current_screen();
-        if (!$screen || !in_array($screen->post_type, array('page', 'post'), true)) {
+        if (!$screen || !in_array($screen->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
             return;
         }
 
@@ -120,6 +124,55 @@ class Sha_Builder_Admin {
         return Sha_Builder_Main::instance()->get_builder_url($post_id);
     }
 
+    public function add_main_admin_menu() {
+        add_menu_page(
+            __('SHA BUILDER', 'sha-builder'),
+            __('SHA BUILDER', 'sha-builder'),
+            'edit_posts',
+            'sha-builder',
+            array($this, 'render_config_page'),
+            'dashicons-layout',
+            30
+        );
+
+        add_submenu_page(
+            'sha-builder',
+            __('Config', 'sha-builder'),
+            __('Config', 'sha-builder'),
+            'manage_options',
+            'sha-builder',
+            array($this, 'render_config_page')
+        );
+
+        add_submenu_page(
+            'sha-builder',
+            __('Headers', 'sha-builder'),
+            __('Headers', 'sha-builder'),
+            'edit_posts',
+            'edit.php?post_type=sha_header'
+        );
+
+        add_submenu_page(
+            'sha-builder',
+            __('Footers', 'sha-builder'),
+            __('Footers', 'sha-builder'),
+            'edit_posts',
+            'edit.php?post_type=sha_footer'
+        );
+    }
+
+    public function register_settings() {
+        register_setting('sha_builder_settings', 'sha_builder_active_header', 'intval');
+        register_setting('sha_builder_settings', 'sha_builder_active_footer', 'intval');
+    }
+
+    public function render_config_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
+        }
+        include SHA_BUILDER_PATH . 'admin/templates/config-page.php';
+    }
+
     public function add_builder_page_fallback() {
         add_submenu_page(
             null,
@@ -142,7 +195,7 @@ class Sha_Builder_Admin {
 
         $post_id = intval($_GET['post_id']);
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, array('page', 'post'), true)) {
+        if (!$post || !in_array($post->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
             wp_die(__('Invalid page.', 'sha-builder'), 404);
         }
         if (!current_user_can('edit_post', $post_id)) {
@@ -208,14 +261,14 @@ class Sha_Builder_Admin {
             return;
         }
         $screen = get_current_screen();
-        if ($screen && in_array($screen->post_type, array('page', 'post'), true)) {
+        if ($screen && in_array($screen->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
             $style = '#the-list .sha-edit-link:hover{color:#d86a1f!important;}';
             wp_add_inline_style('list-tables', $style);
         }
     }
 
     public function body_class($classes) {
-        if (isset($_GET['page']) && 'sha-builder' === $_GET['page']) {
+        if (isset($_GET['page']) && 'sha-builder-fallback' === $_GET['page']) {
             $classes .= ' sha-builder-active';
         }
         return $classes;

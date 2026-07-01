@@ -10,6 +10,7 @@ class Sha_Builder_Main {
     private $admin = null;
     private $frontend = null;
     private $ajax_handler = null;
+    private $cpt = null;
 
     public static function instance() {
         if (is_null(self::$instance)) {
@@ -27,12 +28,14 @@ class Sha_Builder_Main {
         require_once SHA_BUILDER_PATH . 'includes/class-admin.php';
         require_once SHA_BUILDER_PATH . 'includes/class-frontend.php';
         require_once SHA_BUILDER_PATH . 'includes/class-ajax.php';
+        require_once SHA_BUILDER_PATH . 'includes/class-cpt.php';
     }
 
     private function init_hooks() {
         $this->admin        = new Sha_Builder_Admin();
         $this->frontend     = new Sha_Builder_Frontend();
         $this->ajax_handler = new Sha_Builder_Ajax();
+        $this->cpt          = new Sha_Builder_CPT();
 
         add_action('init', array($this, 'add_rewrite_rules'));
         add_filter('query_vars', array($this, 'add_builder_query_var'));
@@ -52,6 +55,10 @@ class Sha_Builder_Main {
         return $vars;
     }
 
+    public function get_frontend() {
+        return $this->frontend;
+    }
+
     public function get_builder_url($post_id) {
         $post_id = intval($post_id);
         $permalink = get_option('permalink_structure');
@@ -62,6 +69,10 @@ class Sha_Builder_Main {
         }
         $url = add_query_arg('_wpnonce', wp_create_nonce('sha_builder_access_' . $post_id), $url);
         return $url;
+    }
+
+    public static function get_supported_post_types() {
+        return apply_filters('sha_builder_supported_post_types', array('page', 'post', 'sha_header', 'sha_footer'));
     }
 
     public function handle_builder_request() {
@@ -81,7 +92,7 @@ class Sha_Builder_Main {
         }
 
         $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, array('page', 'post'), true)) {
+        if (!$post || !in_array($post->post_type, self::get_supported_post_types(), true)) {
             wp_die(__('Invalid page.', 'sha-builder'), 404);
         }
 
