@@ -10,6 +10,9 @@
             isDirty: false,
             currentSelector: null,
             overrides: {}, // { selector: { property: value } }
+            autoRenderTimer: null,
+            frontendHead: '',
+            frontendHeadFetched: false,
         },
 
         init: function () {
@@ -30,6 +33,7 @@
             console.log('[SHA BUILDER] Init post_id=' + this.state.postId + ' html_len=' + (this.$htmlInput.val() || '').length + ' css_len=' + (this.$cssInput.val() || '').length + ' js_len=' + (this.$jsInput.val() || '').length + ' overrides=' + Object.keys(this.state.overrides).length);
             this.bindEvents();
             this.renderPreview();
+            this.fetchFrontendAssets();
         },
 
         cacheDOM: function () {
@@ -72,6 +76,12 @@
             var self = this;
             this.$htmlInput.add(this.$cssInput).add(this.$jsInput).on('input', function () {
                 self.markDirty();
+                if (self.state.autoRenderTimer) {
+                    clearTimeout(self.state.autoRenderTimer);
+                }
+                self.state.autoRenderTimer = setTimeout(function () {
+                    self.renderPreview(true);
+                }, 800);
             });
 
             // Device preview buttons
@@ -315,7 +325,7 @@
                 + '</body></html>';
         },
 
-        renderPreview: function () {
+        renderPreview: function (skipLoading) {
             var self = this;
             var html = this.$htmlInput.val();
             var phpRegex = /<\?php|<\?=|<\?[^x]/;
@@ -337,6 +347,9 @@
                     self._doRenderPreview(html);
                 });
             } else {
+                if (!skipLoading) {
+                    this.startLoading();
+                }
                 this._doRenderPreview(html);
             }
         },
@@ -432,8 +445,10 @@
 
             var gCss = typeof shaBuilderGlobals !== 'undefined' ? (shaBuilderGlobals.globalCss || '') : '';
             var gJs  = typeof shaBuilderGlobals !== 'undefined' ? (shaBuilderGlobals.globalJs  || '') : '';
+            var frontendHead = this.state.frontendHead || '';
 
             var doc = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
+                + frontendHead
                 + '<style>' + inspectorCSS + (gCss ? '\n' + gCss : '') + '\n' + css + '</style>'
                 + '</head><body>'
                 + html
@@ -518,6 +533,25 @@
                 self.stopLoading();
                 self.injectPseudoStyles();
             }, 200);
+        },
+
+        fetchFrontendAssets: function () {
+            if (this.state.frontendHeadFetched) return;
+            this.state.frontendHeadFetched = true;
+
+            var self = this;
+            $.post(shaBuilder.ajaxUrl, {
+                action: 'sha_builder_get_preview_assets',
+                nonce: shaBuilder.nonce,
+                post_id: this.state.postId
+            }, function (response) {
+                if (response.success && response.data && response.data.head) {
+                    self.state.frontendHead = response.data.head;
+                    self.renderPreview(true);
+                }
+            }, 'json').fail(function () {
+                // Silently fall back — no frontend assets loaded
+            });
         },
 
         setPreviewDevice: function (device) {

@@ -3,7 +3,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$footer_id = get_option('sha_builder_active_footer', 0);
+$frontend  = sha_builder()->get_frontend();
+$footer_id = $frontend->get_effective_footer_id();
 $data      = array();
 
 if ($footer_id) {

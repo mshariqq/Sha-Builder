@@ -242,8 +242,30 @@ class Sha_Builder_Frontend {
         return $templates;
     }
 
+    public function get_effective_header_id() {
+        $post_id = get_the_ID();
+        if ($post_id) {
+            $page_header_id = get_post_meta($post_id, '_sha_builder_page_header', true);
+            if ($page_header_id && 'publish' === get_post_status($page_header_id)) {
+                return intval($page_header_id);
+            }
+        }
+        return intval(get_option('sha_builder_active_header', 0));
+    }
+
+    public function get_effective_footer_id() {
+        $post_id = get_the_ID();
+        if ($post_id) {
+            $page_footer_id = get_post_meta($post_id, '_sha_builder_page_footer', true);
+            if ($page_footer_id && 'publish' === get_post_status($page_footer_id)) {
+                return intval($page_footer_id);
+            }
+        }
+        return intval(get_option('sha_builder_active_footer', 0));
+    }
+
     public function has_custom_header() {
-        $header_id = get_option('sha_builder_active_header', 0);
+        $header_id = $this->get_effective_header_id();
         if (!$header_id || 'publish' !== get_post_status($header_id)) {
             return false;
         }
@@ -252,7 +274,7 @@ class Sha_Builder_Frontend {
     }
 
     public function has_custom_footer() {
-        $footer_id = get_option('sha_builder_active_footer', 0);
+        $footer_id = $this->get_effective_footer_id();
         if (!$footer_id || 'publish' !== get_post_status($footer_id)) {
             return false;
         }

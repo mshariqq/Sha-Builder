@@ -15,6 +15,7 @@ class Sha_Builder_Admin {
         add_filter('sha_header_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('sha_footer_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_action('add_meta_boxes', array($this, 'add_builder_meta_box'));
+        add_action('save_post', array($this, 'save_builder_page_header_footer'), 10, 2);
         add_action('admin_enqueue_scripts', array($this, 'enqueue_list_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_edit_screen_script'));
         add_filter('redirect_post_location', array($this, 'redirect_after_builder_save'), 10, 2);
@@ -70,6 +71,24 @@ class Sha_Builder_Admin {
         $builder_url = Sha_Builder_Main::instance()->get_builder_url($post->ID);
         $post_type_object = get_post_type_object($post->post_type);
         $label = $post_type_object ? strtolower($post_type_object->labels->singular_name) : __('page', 'sha-builder');
+
+        $selected_header = get_post_meta($post->ID, '_sha_builder_page_header', true);
+        $selected_footer = get_post_meta($post->ID, '_sha_builder_page_footer', true);
+
+        $headers = get_posts(array(
+            'post_type'      => 'sha_header',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ));
+        $footers = get_posts(array(
+            'post_type'      => 'sha_footer',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ));
         ?>
         <div style="text-align:center;padding:8px 0;">
             <p style="margin:0 0 12px;font-size:13px;color:#555;">
@@ -81,7 +100,69 @@ class Sha_Builder_Admin {
                 <?php esc_html_e('Edit with Sha Builder', 'sha-builder'); ?>
             </a>
         </div>
+        <div style="padding:8px 0;border-top:1px solid #ddd;margin-top:4px;">
+            <?php wp_nonce_field('sha_builder_meta_action', 'sha_builder_meta_nonce'); ?>
+            <p style="margin:0 0 8px;font-size:12px;color:#555;">
+                <label for="sha-builder-page-header" style="display:block;margin-bottom:4px;font-weight:600;">
+                    <?php esc_html_e('Select Header', 'sha-builder'); ?>
+                </label>
+                <select id="sha-builder-page-header" name="_sha_builder_page_header" style="width:100%;">
+                    <option value=""><?php esc_html_e('&mdash; Theme Default &mdash;', 'sha-builder'); ?></option>
+                    <?php foreach ($headers as $header) : ?>
+                        <option value="<?php echo esc_attr($header->ID); ?>" <?php selected($selected_header, $header->ID); ?>>
+                            <?php echo esc_html($header->post_title); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+            <p style="margin:0;font-size:12px;color:#555;">
+                <label for="sha-builder-page-footer" style="display:block;margin-bottom:4px;font-weight:600;">
+                    <?php esc_html_e('Select Footer', 'sha-builder'); ?>
+                </label>
+                <select id="sha-builder-page-footer" name="_sha_builder_page_footer" style="width:100%;">
+                    <option value=""><?php esc_html_e('&mdash; Theme Default &mdash;', 'sha-builder'); ?></option>
+                    <?php foreach ($footers as $footer) : ?>
+                        <option value="<?php echo esc_attr($footer->ID); ?>" <?php selected($selected_footer, $footer->ID); ?>>
+                            <?php echo esc_html($footer->post_title); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </p>
+        </div>
         <?php
+    }
+
+    public function save_builder_page_header_footer($post_id, $post) {
+        if (!in_array($post->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
+            return;
+        }
+        if (!isset($_POST['sha_builder_meta_nonce']) || !wp_verify_nonce($_POST['sha_builder_meta_nonce'], 'sha_builder_meta_action')) {
+            return;
+        }
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return;
+        }
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+
+        if (isset($_POST['_sha_builder_page_header'])) {
+            $header_id = intval($_POST['_sha_builder_page_header']);
+            if ($header_id && 'publish' === get_post_status($header_id)) {
+                update_post_meta($post_id, '_sha_builder_page_header', $header_id);
+            } else {
+                delete_post_meta($post_id, '_sha_builder_page_header');
+            }
+        }
+
+        if (isset($_POST['_sha_builder_page_footer'])) {
+            $footer_id = intval($_POST['_sha_builder_page_footer']);
+            if ($footer_id && 'publish' === get_post_status($footer_id)) {
+                update_post_meta($post_id, '_sha_builder_page_footer', $footer_id);
+            } else {
+                delete_post_meta($post_id, '_sha_builder_page_footer');
+            }
+        }
     }
 
     public function enqueue_edit_screen_script($hook) {

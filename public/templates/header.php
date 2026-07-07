@@ -3,7 +3,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$header_id = get_option('sha_builder_active_header', 0);
+$frontend  = sha_builder()->get_frontend();
+$header_id = $frontend->get_effective_header_id();
 $data      = array();
 
 if ($header_id) {

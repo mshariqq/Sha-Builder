@@ -13,6 +13,7 @@ class Sha_Builder_Ajax {
         add_action('wp_ajax_sha_builder_save', array($this, 'save_builder_data'));
         add_action('wp_ajax_sha_builder_load', array($this, 'load_builder_data'));
         add_action('wp_ajax_sha_builder_execute_php', array($this, 'execute_php_for_preview'));
+        add_action('wp_ajax_sha_builder_get_preview_assets', array($this, 'get_preview_assets'));
     }
 
     private function verify_request() {
@@ -120,6 +121,51 @@ class Sha_Builder_Ajax {
         $executed = $executor->execute_php($html);
 
         wp_send_json_success(array('html' => $executed));
+    }
+
+    public function get_preview_assets() {
+        $this->verify_request();
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        if (!$post_id) {
+            wp_send_json_error(array('message' => __('Invalid post ID.', 'sha-builder')));
+        }
+
+        $cache_key = 'sha_preview_assets_' . $post_id;
+        $cached = get_transient($cache_key);
+        if (false !== $cached) {
+            wp_send_json_success(array('head' => $cached));
+        }
+
+        $url = get_permalink($post_id);
+        if (!$url) {
+            wp_send_json_success(array('head' => ''));
+        }
+
+        $response = wp_remote_get($url, array(
+            'timeout'   => 15,
+            'headers'   => array('Accept' => 'text/html'),
+            'sslverify' => false,
+        ));
+
+        if (is_wp_error($response)) {
+            wp_send_json_success(array('head' => ''));
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $head_content = '';
+
+        if (!empty($body)) {
+            preg_match('/<head>([\s\S]*?)<\/head>/i', $body, $matches);
+            if (!empty($matches[1])) {
+                $head_content = $matches[1];
+                $head_content = preg_replace('/<style[^>]*>\s*#sha-inspector-overlay[\s\S]*?<\/style>/i', '', $head_content);
+            }
+        }
+
+        set_transient($cache_key, $head_content, HOUR_IN_SECONDS);
+
+        wp_send_json_success(array('head' => $head_content));
     }
 
     private function sanitize_code_input($input, $max_length) {
