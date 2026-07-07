@@ -59,6 +59,13 @@ Built for developers who want the speed of a visual builder without sacrificing 
 
 ## Changelog
 
+### 1.3.0
+- **New: Per-Page Header/Footer Override** — Select Header and Footer dropdowns in the Sha Builder meta box on pages, posts, and CPTs. Override the global config for specific pages.
+- **New: Auto-Render Preview** — Changes now appear instantly as you type in the HTML, CSS, or JS editors (800ms debounce). No need to click "Render" manually.
+- **New: Frontend Asset Injection** — The preview iframe now includes your theme's CSS, jQuery, and JavaScript. Scroll animations, hover effects, and theme scripts execute correctly.
+- **Improved: Builder Performance** — Auto-render skips the loading overlay for non-PHP changes. Property panel overrides remain instant via postMessage.
+- **Fixed: Theme Animations in Preview** — Scroll-triggered animations, fade effects, and other JS-dependent features now work in the builder preview.
+
 ### 1.2.0
 - **New: PHP Code Execution** — Write PHP code directly in the HTML editor. PHP tags (`<?php`, `<?=`, `<?`) are detected and executed on save and render.
 - **New: Cache System** — Executed PHP output is cached to `wp-content/uploads/sha-builder/cache/` for fast loading. Cache is regenerated on every save.
