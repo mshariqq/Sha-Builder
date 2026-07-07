@@ -48,8 +48,11 @@ class Sha_Builder_Frontend {
         remove_filter('the_content', 'wpautop');
         remove_filter('the_content', 'wptexturize');
 
+        $executor = Sha_Builder_PHP_Executor::instance();
+        $html = $executor->execute_html($post_id, $data['html']);
+
         return '<div id="sha-builder-content-' . intval($post_id) . '" class="sha-builder-content-area">'
-            . $data['html']
+            . $html
             . '</div>';
     }
 

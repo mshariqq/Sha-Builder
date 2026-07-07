@@ -15,7 +15,9 @@ if (!is_array($data)) {
 }
 
 if (!empty($data['html'])) {
-    echo '<div id="sha-builder-footer" class="sha-builder-footer">' . $data['html'] . '</div>';
+    $executor = Sha_Builder_PHP_Executor::instance();
+    $html = $executor->execute_html($footer_id, $data['html']);
+    echo '<div id="sha-builder-footer" class="sha-builder-footer">' . $html . '</div>';
 }
 
 if (!empty($data['js'])) :

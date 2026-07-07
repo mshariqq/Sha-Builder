@@ -9,6 +9,7 @@ class Sha_Builder_Admin {
         add_action('admin_menu', array($this, 'add_builder_page_fallback'));
         add_action('admin_menu', array($this, 'add_main_admin_menu'), 9);
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_init', array($this, 'maybe_flush_rewrite'));
         add_filter('page_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('post_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('sha_header_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
@@ -18,6 +19,17 @@ class Sha_Builder_Admin {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_edit_screen_script'));
         add_filter('redirect_post_location', array($this, 'redirect_after_builder_save'), 10, 2);
         add_filter('admin_body_class', array($this, 'body_class'));
+    }
+
+    public function maybe_flush_rewrite() {
+        $installed_version = get_option('sha_builder_version', '0');
+        if ($installed_version !== SHA_BUILDER_VERSION) {
+            global $wp_rewrite;
+            if ($wp_rewrite) {
+                $wp_rewrite->flush_rules();
+            }
+            update_option('sha_builder_version', SHA_BUILDER_VERSION);
+        }
     }
 
     public function add_edit_with_sha_button($actions, $post) {

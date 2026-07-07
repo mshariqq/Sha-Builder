@@ -859,6 +859,12 @@ html.sha-builder-active #wpadminbar {
     border: 1px solid #c62828;
 }
 
+.sha-notice-warning {
+    background: #e65100;
+    color: #fff3e0;
+    border: 1px solid #ef6c00;
+}
+
 @keyframes sha-slide-in {
     from {
         transform: translateX(100%);

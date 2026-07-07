@@ -129,7 +129,7 @@ if (!defined('ABSPATH')) {
             <!-- RIGHT PANEL -->
             <div class="sha-right-panel">
                 <div class="sha-preview-container">
-                    <iframe id="sha-preview-frame" class="sha-preview-frame" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+                    <iframe id="sha-preview-frame" class="sha-preview-frame"></iframe>
                     <div class="sha-loading-overlay">
                         <div class="sha-spinner"></div>
                         <span class="sha-loading-text">Rendering...</span>

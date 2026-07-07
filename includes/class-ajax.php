@@ -12,6 +12,7 @@ class Sha_Builder_Ajax {
     public function __construct() {
         add_action('wp_ajax_sha_builder_save', array($this, 'save_builder_data'));
         add_action('wp_ajax_sha_builder_load', array($this, 'load_builder_data'));
+        add_action('wp_ajax_sha_builder_execute_php', array($this, 'execute_php_for_preview'));
     }
 
     private function verify_request() {
@@ -65,6 +66,9 @@ class Sha_Builder_Ajax {
             error_log('[SHA BUILDER] update_post_meta returned false. Existing data type: ' . gettype($existing) . ' serialized: ' . maybe_serialize($existing));
         }
 
+        $executor = Sha_Builder_PHP_Executor::instance();
+        $executor->generate_cache($post_id, $html);
+
         wp_send_json_success(array(
             'message' => __('Page saved successfully.', 'sha-builder'),
         ));
@@ -94,6 +98,28 @@ class Sha_Builder_Ajax {
         }
 
         wp_send_json_success($data);
+    }
+
+    public function execute_php_for_preview() {
+        $this->verify_request();
+
+        $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+        if (!$post_id) {
+            wp_send_json_error(array('message' => __('Invalid post ID.', 'sha-builder')));
+        }
+
+        $this->validate_post($post_id);
+
+        $html = isset($_POST['html']) ? wp_unslash($_POST['html']) : '';
+
+        if (empty($html)) {
+            wp_send_json_success(array('html' => ''));
+        }
+
+        $executor = Sha_Builder_PHP_Executor::instance();
+        $executed = $executor->execute_php($html);
+
+        wp_send_json_success(array('html' => $executed));
     }
 
     private function sanitize_code_input($input, $max_length) {

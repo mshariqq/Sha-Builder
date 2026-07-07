@@ -18,6 +18,7 @@ Built for developers who want the speed of a visual builder without sacrificing 
 - **Code Editors** — Full HTML, CSS, and JavaScript editors with syntax-aware styling.
 - **Undo-Safe** — Your original HTML/CSS/JS stays untouched in the code editors; the inspector layer adds overrides on top.
 - **Frontend Rendering** — All builder content renders on the frontend with proper CSS/JS injection.
+- **PHP Code Execution** — Write PHP code directly in the HTML editor and it will be executed on save and render. Cache files are generated automatically for fast loading.
 
 ## Requirements
 
@@ -55,6 +56,21 @@ Built for developers who want the speed of a visual builder without sacrificing 
 3. Click the element to select it — the **Properties** tab opens with all editable CSS.
 4. Modify values — changes apply live to the preview.
 5. Click **Save** to persist everything.
+
+## Changelog
+
+### 1.2.0
+- **New: PHP Code Execution** — Write PHP code directly in the HTML editor. PHP tags (`<?php`, `<?=`, `<?`) are detected and executed on save and render.
+- **New: Cache System** — Executed PHP output is cached to `wp-content/uploads/sha-builder/cache/` for fast loading. Cache is regenerated on every save.
+- **New: Builder Preview Support** — PHP code in the HTML editor is also executed in the builder's live preview via AJAX.
+- **New: Header/Footer PHP Support** — Custom headers and footers now also support PHP code execution.
+- **New: PHP Warning Toast** — A warning toast is displayed when saving content containing PHP code, alerting non-developers about dynamic server-side code.
+- **Fixed: Preview Script Execution** — JavaScript animations and DOM-dependent scripts now work correctly in the builder preview. Removed iframe sandbox restriction that blocked external scripts and CDN resources. Switched to Blob URL for reliable page context.
+- **Security: Cache Directory Protection** — Cache directory includes `.htaccess` and `web.config` files to prevent direct access.
+- **Improved: Deactivation Cleanup** — All cache files are automatically removed when the plugin is deactivated.
+
+### 1.1.0
+- Initial release with live preview, element inspector, CSS property editor, override system, and responsive preview.
 
 ## License
 

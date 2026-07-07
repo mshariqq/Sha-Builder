@@ -30,5 +30,7 @@ if (!is_array($data)) {
 <?php wp_body_open(); ?>
 <?php
 if (!empty($data['html'])) {
-    echo '<div id="sha-builder-header" class="sha-builder-header">' . $data['html'] . '</div>';
+    $executor = Sha_Builder_PHP_Executor::instance();
+    $html = $executor->execute_html($header_id, $data['html']);
+    echo '<div id="sha-builder-header" class="sha-builder-header">' . $html . '</div>';
 }

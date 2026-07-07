@@ -29,6 +29,7 @@ class Sha_Builder_Main {
         require_once SHA_BUILDER_PATH . 'includes/class-frontend.php';
         require_once SHA_BUILDER_PATH . 'includes/class-ajax.php';
         require_once SHA_BUILDER_PATH . 'includes/class-cpt.php';
+        require_once SHA_BUILDER_PATH . 'includes/class-php-executor.php';
     }
 
     private function init_hooks() {
@@ -195,10 +196,14 @@ class Sha_Builder_Main {
         if ($role) {
             $role->remove_cap('edit_with_sha_builder');
         }
+
+        $executor = Sha_Builder_PHP_Executor::instance();
+        $executor->flush_all_cache();
+
         flush_rewrite_rules();
     }
 
-    private static function add_rewrite_rules_static() {
+    public static function add_rewrite_rules_static() {
         add_rewrite_rule(
             'sha-builder/([0-9]+)/?$',
             'index.php?sha_builder_id=$matches[1]',
