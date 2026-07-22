@@ -5,14 +5,25 @@ if (!defined('ABSPATH')) {
 
 $frontend  = sha_builder()->get_frontend();
 $header_id = $frontend->get_effective_header_id();
-$data      = array();
+$data = array();
 
 if ($header_id) {
-    $data = get_post_meta($header_id, '_sha_builder_data', true);
+    $data = $frontend->get_data($header_id);
 }
 
-if (!is_array($data)) {
-    $data = array('html' => '', 'css' => '', 'js' => '');
+$html = '';
+$css  = '';
+$js   = '';
+if ($data && !empty($data['sections'])) {
+    foreach ($data['sections'] as $sec) {
+        if (is_array($sec)) {
+            $html .= (isset($sec['html']) ? $sec['html'] : '') . "\n";
+            $css  .= (isset($sec['css'])  ? $sec['css']  : '') . "\n";
+            $js   .= (isset($sec['js'])   ? $sec['js']   : '') . "\n";
+        }
+    }
+    if (!empty($data['global_css'])) $css .= "\n" . $data['global_css'];
+    if (!empty($data['global_js']))  $js  .= "\n" . $data['global_js'];
 }
 ?>
 <!DOCTYPE html>
@@ -21,17 +32,17 @@ if (!is_array($data)) {
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <?php wp_head(); ?>
-    <?php if (!empty($data['css'])) : ?>
+    <?php if (!empty($css)) : ?>
     <style id="sha-builder-header-css">
-        <?php echo $data['css']; ?>
+        <?php echo wp_strip_all_tags($css); ?>
     </style>
     <?php endif; ?>
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <?php
-if (!empty($data['html'])) {
+if (!empty($html)) {
     $executor = Sha_Builder_PHP_Executor::instance();
-    $html = $executor->execute_html($header_id, $data['html']);
-    echo '<div id="sha-builder-header" class="sha-builder-header">' . $html . '</div>';
+    $rendered = $executor->execute_html($header_id, '', $html);
+    echo '<div id="sha-builder-header" class="sha-builder-header">' . $rendered . '</div>'; // WPCS: XSS ok - rendered builder content
 }

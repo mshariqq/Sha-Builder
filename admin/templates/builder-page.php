@@ -2,6 +2,9 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+$sections_json = wp_json_encode($saved_data['sections']);
+$global_css = esc_textarea($saved_data['global_css']);
+$global_js  = esc_textarea($saved_data['global_js']);
 ?><!DOCTYPE html>
 <html <?php language_attributes(); ?> class="sha-builder-active">
 <head>
@@ -69,32 +72,61 @@ if (!defined('ABSPATH')) {
 
             <!-- LEFT PANEL -->
             <div class="sha-left-panel">
+                <!-- SECTION MANAGER -->
+                <div class="sha-section-manager">
+                    <div class="sha-section-header">
+                        <span class="sha-section-header-label"><?php esc_html_e('Sections', 'sha-builder'); ?></span>
+                        <div style="display:flex;gap:4px;">
+                            <button class="sha-btn sha-btn-duplicate-section" title="<?php esc_attr_e('Duplicate Section (Ctrl+D)', 'sha-builder'); ?>">&#x1F4CB;</button>
+                            <button class="sha-btn sha-btn-add-section" title="<?php esc_attr_e('Add Section', 'sha-builder'); ?>">+</button>
+                        </div>
+                    </div>
+                    <div class="sha-section-list" id="sha-section-list"></div>
+                </div>
+
                 <div class="sha-tabs">
                     <button class="sha-tab-btn active" data-tab="code"><?php esc_html_e('Code', 'sha-builder'); ?></button>
+                    <button class="sha-tab-btn" data-tab="globals"><?php esc_html_e('Globals', 'sha-builder'); ?></button>
                     <button class="sha-tab-btn" data-tab="properties"><?php esc_html_e('Properties', 'sha-builder'); ?></button>
                     <button class="sha-tab-btn" data-tab="attributes"><?php esc_html_e('Attributes', 'sha-builder'); ?></button>
                 </div>
 
                 <div class="sha-panel-scroll">
-                    <!-- CODE PANEL -->
+                    <!-- CODE PANEL (per-section) -->
                     <div id="code-panel" class="sha-panel-content active">
                         <div class="sha-code-section">
                             <div class="sha-code-header">
                                 <span class="sha-code-lang html">HTML</span>
                             </div>
-                            <textarea id="sha-html-code" class="sha-code-editor html" spellcheck="false" placeholder="<?php esc_attr_e('<div>Your HTML here...</div>', 'sha-builder'); ?>"><?php echo esc_textarea($saved_data['html']); ?></textarea>
+                            <textarea id="sha-html-code" class="sha-code-editor html" spellcheck="false" placeholder="<?php esc_attr_e('<div>Your HTML here...</div>', 'sha-builder'); ?>"></textarea>
                         </div>
                         <div class="sha-code-section">
                             <div class="sha-code-header">
                                 <span class="sha-code-lang css">CSS</span>
                             </div>
-                            <textarea id="sha-css-code" class="sha-code-editor css" spellcheck="false" placeholder="<?php esc_attr_e('/* Your CSS here */', 'sha-builder'); ?>"><?php echo esc_textarea($saved_data['css']); ?></textarea>
+                            <textarea id="sha-css-code" class="sha-code-editor css" spellcheck="false" placeholder="<?php esc_attr_e('/* Your CSS here */', 'sha-builder'); ?>"></textarea>
                         </div>
                         <div class="sha-code-section">
                             <div class="sha-code-header">
                                 <span class="sha-code-lang js">JS</span>
                             </div>
-                            <textarea id="sha-js-code" class="sha-code-editor js" spellcheck="false" placeholder="<?php esc_attr_e('// Your JavaScript here...', 'sha-builder'); ?>"><?php echo esc_textarea($saved_data['js']); ?></textarea>
+                            <textarea id="sha-js-code" class="sha-code-editor js" spellcheck="false" placeholder="<?php esc_attr_e('// Your JavaScript here...', 'sha-builder'); ?>"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- GLOBALS PANEL -->
+                    <div id="globals-panel" class="sha-panel-content">
+                        <div class="sha-code-section">
+                            <div class="sha-code-header">
+                                <span class="sha-code-lang css"><?php esc_html_e('Global CSS', 'sha-builder'); ?></span>
+                            </div>
+                            <textarea id="sha-global-css" class="sha-code-editor css" spellcheck="false" placeholder="<?php esc_attr_e('/* Global CSS across all sections */', 'sha-builder'); ?>"><?php echo $global_css; ?></textarea>
+                        </div>
+                        <div class="sha-code-section">
+                            <div class="sha-code-header">
+                                <span class="sha-code-lang js"><?php esc_html_e('Global JS', 'sha-builder'); ?></span>
+                            </div>
+                            <textarea id="sha-global-js" class="sha-code-editor js" spellcheck="false" placeholder="<?php esc_attr_e('// Global JavaScript across all sections', 'sha-builder'); ?>"><?php echo $global_js; ?></textarea>
                         </div>
                     </div>
 
@@ -145,6 +177,9 @@ if (!defined('ABSPATH')) {
 
         </div>
     </div>
+
+    <!-- Sections data for JS -->
+    <script id="sha-sections-data" type="application/json"><?php echo $sections_json; ?></script>
 
     <div class="sha-modal-overlay" id="sha-confirm-modal" style="display:none;">
         <div class="sha-modal-box">

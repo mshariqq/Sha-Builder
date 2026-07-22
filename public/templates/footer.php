@@ -5,26 +5,40 @@ if (!defined('ABSPATH')) {
 
 $frontend  = sha_builder()->get_frontend();
 $footer_id = $frontend->get_effective_footer_id();
-$data      = array();
+$data = array();
 
 if ($footer_id) {
-    $data = get_post_meta($footer_id, '_sha_builder_data', true);
+    $data = $frontend->get_data($footer_id);
 }
 
-if (!is_array($data)) {
-    $data = array('html' => '', 'css' => '', 'js' => '');
+$html = '';
+$css  = '';
+$js   = '';
+if ($data && !empty($data['sections'])) {
+    foreach ($data['sections'] as $sec) {
+        if (is_array($sec)) {
+            $html .= (isset($sec['html']) ? $sec['html'] : '') . "\n";
+            $css  .= (isset($sec['css'])  ? $sec['css']  : '') . "\n";
+            $js   .= (isset($sec['js'])   ? $sec['js']   : '') . "\n";
+        }
+    }
+    if (!empty($data['global_css'])) $css .= "\n" . $data['global_css'];
+    if (!empty($data['global_js']))  $js  .= "\n" . $data['global_js'];
 }
 
-if (!empty($data['html'])) {
-    $executor = Sha_Builder_PHP_Executor::instance();
-    $html = $executor->execute_html($footer_id, $data['html']);
-    echo '<div id="sha-builder-footer" class="sha-builder-footer">' . $html . '</div>';
+$executor = Sha_Builder_PHP_Executor::instance();
+
+if (!empty($html)) {
+    $rendered = $executor->execute_html($footer_id, '', $html);
+    echo '<div id="sha-builder-footer" class="sha-builder-footer">' . $rendered . '</div>'; // WPCS: XSS ok - rendered builder content
 }
 
-if (!empty($data['js'])) :
+if (!empty($js)) :
 ?>
 <script id="sha-builder-footer-js">
-<?php echo $data['js']; ?>
+// <![CDATA[
+<?php echo "\n" . $js . "\n"; ?>
+// ]]>
 </script>
 <?php endif; ?>
 <?php wp_footer(); ?>

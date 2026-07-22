@@ -22,6 +22,21 @@ class Sha_Builder_Frontend {
         add_action('update_option_sha_builder_global_js', array($this, 'regenerate_global_files'));
     }
 
+    /**
+     * Load and migrate builder data to section format.
+     */
+    public function get_data($post_id) {
+        $raw = get_post_meta($post_id, '_sha_builder_data', true);
+        if (!is_array($raw)) {
+            return null;
+        }
+        $ajax = sha_builder()->get_ajax();
+        if ($ajax) {
+            return $ajax->migrate_to_sections($raw, $post_id);
+        }
+        return $raw;
+    }
+
     public function has_builder_content($post_id = null) {
         if (!$post_id) {
             $post_id = get_the_ID();
@@ -29,8 +44,11 @@ class Sha_Builder_Frontend {
         if (!$post_id) {
             return false;
         }
-        $data = get_post_meta($post_id, '_sha_builder_data', true);
-        return is_array($data) && !empty($data['html']);
+        $data = $this->get_data($post_id);
+        return is_array($data)
+            && isset($data['sections'])
+            && is_array($data['sections'])
+            && !empty($data['sections']);
     }
 
     public function render_frontend_html($content) {
@@ -39,20 +57,39 @@ class Sha_Builder_Frontend {
         }
 
         $post_id = get_the_ID();
-        if (!$this->has_builder_content($post_id)) {
+        $data = $this->get_data($post_id);
+        if (!$data || empty($data['sections'])) {
             return $content;
         }
-
-        $data = get_post_meta($post_id, '_sha_builder_data', true);
 
         remove_filter('the_content', 'wpautop');
         remove_filter('the_content', 'wptexturize');
 
         $executor = Sha_Builder_PHP_Executor::instance();
-        $html = $executor->execute_html($post_id, $data['html']);
+        $out = '';
+
+        foreach ($data['sections'] as $sec) {
+            if (!is_array($sec) || empty($sec['html'])) {
+                continue;
+            }
+            $sec_id = isset($sec['id']) ? esc_attr($sec['id']) : '';
+            $html_file = isset($sec['_html_file']) ? $sec['_html_file'] : null;
+            $sec_html = $executor->execute_html($post_id, $sec_id, $sec['html'], $html_file);
+            $section_attrs = apply_filters('sha_builder_section_attributes', array(
+                'id' => 'sha-section-' . $sec_id,
+                'class' => 'sha-builder-section',
+            ), $sec_id);
+            $attr_str = '';
+            foreach ($section_attrs as $key => $val) {
+                $attr_str .= ' ' . $key . '="' . esc_attr($val) . '"';
+            }
+            $out .= '<div' . $attr_str . '>'
+                . $sec_html
+                . '</div>' . "\n";
+        }
 
         return '<div id="sha-builder-content-' . intval($post_id) . '" class="sha-builder-content-area">'
-            . $html
+            . $out
             . '</div>';
     }
 
@@ -62,15 +99,53 @@ class Sha_Builder_Frontend {
         }
 
         $post_id = get_the_ID();
-        if (!$this->has_builder_content($post_id)) {
+        $data = $this->get_data($post_id);
+        if (!$data || empty($data['sections'])) {
             return;
         }
 
-        $data = get_post_meta($post_id, '_sha_builder_data', true);
-        if (!empty($data['css'])) {
-            $css = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $data['css']);
+        $css_parts = array();
+
+        // Per-section CSS
+        foreach ($data['sections'] as $sec) {
+            if (!empty($sec['css'])) {
+                $cleaned = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $sec['css']);
+                $css_parts[] = $cleaned;
+            }
+        }
+
+        // Global CSS
+        if (!empty($data['global_css'])) {
+            $cleaned = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $data['global_css']);
+            $css_parts[] = $cleaned;
+        }
+
+        if (!empty($css_parts)) {
+            $combined = implode("\n", $css_parts);
             echo "\n<style id=\"sha-builder-css-" . intval($post_id) . "\">\n"
-                . $css . "\n</style>\n";
+                . wp_strip_all_tags($combined) . "\n</style>\n";
+        }
+
+        /* element overrides */
+        if (!empty($data['element_overrides'])) {
+            $overrides_css = array();
+            foreach ($data['element_overrides'] as $section_id => $selectors) {
+                if (!is_array($selectors)) continue;
+                foreach ($selectors as $selector => $props) {
+                    if (!is_array($props)) continue;
+                    $declarations = array();
+                    foreach ($props as $prop => $val) {
+                        $declarations[] = $prop . ':' . $val;
+                    }
+                    if (!empty($declarations)) {
+                        $overrides_css[] = $selector . ' { ' . implode(';', $declarations) . ' }';
+                    }
+                }
+            }
+            if (!empty($overrides_css)) {
+                echo "\n<style id=\"sha-builder-overrides-" . intval($post_id) . "\">\n"
+                    . implode("\n", $overrides_css) . "\n</style>\n";
+            }
         }
     }
 
@@ -80,14 +155,29 @@ class Sha_Builder_Frontend {
         }
 
         $post_id = get_the_ID();
-        if (!$this->has_builder_content($post_id)) {
+        $data = $this->get_data($post_id);
+        if (!$data || empty($data['sections'])) {
             return;
         }
 
-        $data = get_post_meta($post_id, '_sha_builder_data', true);
-        if (!empty($data['js'])) {
+        $js_parts = array();
+
+        // Per-section JS
+        foreach ($data['sections'] as $sec) {
+            if (!empty($sec['js'])) {
+                $js_parts[] = $sec['js'];
+            }
+        }
+
+        // Global JS
+        if (!empty($data['global_js'])) {
+            $js_parts[] = $data['global_js'];
+        }
+
+        if (!empty($js_parts)) {
+            $combined = implode("\n", $js_parts);
             echo "\n<script id=\"sha-builder-js-" . intval($post_id) . "\">\n"
-                . $data['js'] . "\n</script>\n";
+                . "\n// <![CDATA[\n" . $combined . "\n// ]]>\n<\/script>\n";
         }
     }
 
@@ -203,7 +293,6 @@ class Sha_Builder_Frontend {
         $css_file   = $upload_dir . 'global.css';
         $js_file    = $upload_dir . 'global.js';
 
-        // Auto-regenerate if files missing but options have content
         if (!empty($css) && !file_exists($css_file)) {
             $this->regenerate_global_files();
         }
@@ -269,8 +358,8 @@ class Sha_Builder_Frontend {
         if (!$header_id || 'publish' !== get_post_status($header_id)) {
             return false;
         }
-        $data = get_post_meta($header_id, '_sha_builder_data', true);
-        return is_array($data) && !empty($data['html']);
+        $data = $this->get_data($header_id);
+        return is_array($data) && !empty($data['sections']);
     }
 
     public function has_custom_footer() {
@@ -278,8 +367,8 @@ class Sha_Builder_Frontend {
         if (!$footer_id || 'publish' !== get_post_status($footer_id)) {
             return false;
         }
-        $data = get_post_meta($footer_id, '_sha_builder_data', true);
-        return is_array($data) && !empty($data['html']);
+        $data = $this->get_data($footer_id);
+        return is_array($data) && !empty($data['sections']);
     }
 
     public function render_custom_header() {

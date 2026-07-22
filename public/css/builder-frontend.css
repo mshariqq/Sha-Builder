@@ -1,0 +1,1110 @@
+/* ===========================================
+   FRONTEND BUILDER MODE
+   =========================================== */
+
+/* Section hover highlight */
+[id^="sha-section-"] {
+    position: relative;
+    transition: box-shadow 0.2s ease;
+    box-shadow: inset 0 0 0 2px transparent;
+}
+
+[id^="sha-section-"]:hover {
+    box-shadow: inset 0 0 0 2px rgba(240, 131, 58, 0.45);
+}
+
+/* Section label badge */
+.sha-section-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #f0833a;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 2px 7px;
+    letter-spacing: 0.3px;
+    z-index: 99998;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    line-height: 1.4;
+    border-radius: 0 0 4px 0;
+}
+
+.sha-builder-section:hover .sha-section-badge,
+.sha-builder-section.sha-active-section .sha-section-badge {
+    opacity: 1;
+}
+
+/* Floating toolbar */
+.sha-floating-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    background: #1a1a2a;
+    border: 1px solid #2a2a3c;
+    border-radius: 12px;
+    padding: 8px 14px;
+    z-index: 100001;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    align-items: center;
+}
+
+.sha-floating-toolbar button {
+    background: #2d2d44;
+    color: #c0c0d8;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-floating-toolbar button:hover {
+    background: #3d3d5a;
+    color: #f0833a;
+}
+
+.sha-floating-toolbar .sha-toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: #2a2a3c;
+    flex-shrink: 0;
+}
+
+/* ===========================================
+   CONTEXT MENU
+   =========================================== */
+.sha-context-menu {
+    position: fixed;
+    z-index: 100002;
+    background: #1a1a2a;
+    border: 1px solid #2a2a3c;
+    border-radius: 10px;
+    padding: 4px 0;
+    min-width: 200px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-context-menu.active {
+    display: block;
+}
+
+.sha-context-menu .sha-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    color: #c8c8e0;
+    cursor: pointer;
+    transition: all 0.1s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+}
+
+.sha-context-menu .sha-menu-item:hover {
+    background: rgba(240, 131, 58, 0.12);
+    color: #f0833a;
+}
+
+.sha-context-menu .sha-menu-item .menu-icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.sha-context-menu .sha-menu-item .menu-label {
+    flex: 1;
+}
+
+.sha-context-menu .sha-menu-item .menu-hint {
+    font-size: 10px;
+    color: #5c5c7a;
+    margin-left: auto;
+}
+
+.sha-context-menu .sha-menu-separator {
+    height: 1px;
+    background: #2a2a3c;
+    margin: 3px 8px;
+}
+
+.sha-context-menu .sha-menu-item.danger {
+    color: #e55;
+}
+
+.sha-context-menu .sha-menu-item.danger:hover {
+    background: rgba(255, 80, 80, 0.12);
+    color: #ff6b6b;
+}
+
+/* ===========================================
+   CODE EDITOR MODAL
+   =========================================== */
+.sha-modal-overlay-frontend {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 100003;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sha-modal-overlay-frontend.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.sha-modal-box-frontend {
+    background: #1c1c22;
+    border: 1px solid #2a2a32;
+    border-radius: 16px;
+    width: 800px;
+    max-width: 94vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    transform: scale(0.95) translateY(10px);
+    transition: transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+    overflow: hidden;
+}
+
+.active .sha-modal-box-frontend {
+    transform: scale(1) translateY(0);
+}
+
+.sha-modal-header-frontend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #2a2a32;
+    flex-shrink: 0;
+}
+
+.sha-modal-header-frontend h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e0e0e8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sha-modal-header-frontend .sha-modal-section-label {
+    color: #f0833a;
+    font-weight: 600;
+}
+
+.sha-modal-close-frontend {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: #6c6c7c;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.sha-modal-close-frontend:hover {
+    background: rgba(255, 107, 107, 0.12);
+    color: #ff6b6b;
+}
+
+/* Code tabs */
+.sha-code-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #2a2a32;
+    flex-shrink: 0;
+    padding: 0 16px;
+    background: #16161e;
+}
+
+.sha-code-tab {
+    padding: 10px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #7c7c9a;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sha-code-tab:hover {
+    color: #b0b0d0;
+}
+
+.sha-code-tab.active {
+    color: #f0833a;
+    border-bottom-color: #f0833a;
+}
+
+.sha-code-panel {
+    flex: 1;
+    display: none;
+    overflow: hidden;
+    min-height: 300px;
+}
+
+.sha-code-panel.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.sha-code-panel textarea {
+    flex: 1;
+    width: 100%;
+    padding: 16px 18px;
+    background: #111116;
+    color: #dcdce4;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    border: none;
+    outline: none;
+    resize: none;
+    tab-size: 4;
+    min-height: 300px;
+}
+
+.sha-code-panel textarea:focus {
+    background: #0e0e14;
+}
+
+.sha-modal-footer-frontend {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 12px 20px;
+    border-top: 1px solid #2a2a32;
+    flex-shrink: 0;
+}
+
+.sha-modal-footer-frontend .sha-btn {
+    padding: 9px 22px;
+    font-size: 13px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-modal-footer-frontend .sha-btn-cancel {
+    background: #282838;
+    color: #a0a0b0;
+    border: 1px solid #38384a;
+}
+
+.sha-modal-footer-frontend .sha-btn-cancel:hover {
+    background: #38384a;
+    color: #dcdce4;
+}
+
+.sha-modal-footer-frontend .sha-btn-primary {
+    background: #f0833a;
+    color: #fff;
+}
+
+.sha-modal-footer-frontend .sha-btn-primary:hover {
+    background: #e0752e;
+}
+
+/* Section count badge on frontend */
+.sha-section-count-badge {
+    display: inline-block;
+    background: #2d2d44;
+    color: #8a8aaa;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+}
+
+/* Toast notifications */
+#sha-toast-container {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100005;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.sha-toast-item {
+    background: #1a1a2a;
+    border: 1px solid #2a2a3c;
+    color: #dcdce4;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    pointer-events: auto;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sha-toast-item.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sha-toast-item.success {
+    border-color: #2d8a4e;
+    color: #6fcf97;
+}
+
+.sha-toast-item.error {
+    border-color: #8a2d2d;
+    color: #cf6f6f;
+}
+
+.sha-toast-item.info {
+    border-color: #2a2a3c;
+    color: #dcdce4;
+}
+
+/* Disable pointer events on builder sections in edit mode */
+.sha-builder-section.sha-editing {
+    outline-color: #f0833a;
+    outline-width: 2px;
+}
+
+/* ===========================================
+   VISIBLE SECTION EDIT BUTTON
+   =========================================== */
+.sha-section-edit-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #f0833a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+    pointer-events: auto;
+}
+
+[id^="sha-section-"]:hover .sha-section-edit-btn,
+[data-section-id]:hover .sha-section-edit-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.sha-section-edit-btn:hover {
+    background: #e0752e;
+    box-shadow: 0 3px 12px rgba(240, 131, 58, 0.4);
+}
+
+.sha-section-edit-btn .sha-section-edit-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.sha-php-badge {
+    display: inline-block;
+    background: #f0833a;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    letter-spacing: 0.5px;
+    line-height: normal;
+    vertical-align: middle;
+}
+
+.sha-menu-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Builder floating bar at bottom */
+.sha-floating-toolbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0;
+    background: #14141e;
+    border: 1px solid #f0833a;
+    border-radius: 14px;
+    padding: 5px;
+    z-index: 100001;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(240, 131, 58, 0.15);
+    align-items: center;
+}
+
+.sha-toolbar-label {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #f0833a;
+    padding: 0 10px 0 8px;
+    text-transform: uppercase;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-tb-btn {
+    background: #2a2a3c;
+    color: #c8c8e0;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0 2px;
+}
+
+.sha-tb-btn:hover {
+    background: #3d3d56;
+    color: #f0833a;
+}
+
+.sha-tb-btn.sha-tb-primary {
+    background: #f0833a;
+    color: #fff;
+}
+
+.sha-tb-btn.sha-tb-primary:hover {
+    background: #e0752e;
+}
+
+.sha-tb-btn.sha-tb-exit {
+    background: transparent;
+    color: #6c6c8a;
+}
+
+.sha-tb-btn.sha-tb-exit:hover {
+    color: #ff6b6b;
+    background: rgba(255, 80, 80, 0.08);
+}
+
+.sha-floating-toolbar .sha-toolbar-sep {
+    width: 1px;
+    height: 22px;
+    background: #2a2a3c;
+    flex-shrink: 0;
+    margin: 0 3px;
+}
+
+.sha-tb-icon {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* ===========================================
+   CLASS AUTOCOMPLETE DROPDOWN
+   =========================================== */
+.sha-class-autocomplete {
+    position: fixed;
+    z-index: 100010;
+    background: #1e1e2a;
+    border: 1px solid #3a3a50;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: none;
+}
+
+.sha-class-autocomplete-item {
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #c8c8e0;
+    cursor: pointer;
+    transition: background 0.1s;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    white-space: nowrap;
+}
+
+.sha-class-autocomplete-item:hover {
+    background: rgba(240, 131, 58, 0.15);
+    color: #f0833a;
+}
+
+.sha-class-autocomplete-item:first-child {
+    border-radius: 7px 7px 0 0;
+}
+
+.sha-class-autocomplete-item:last-child {
+    border-radius: 0 0 7px 7px;
+}
+
+.sha-class-autocomplete-item:only-child {
+    border-radius: 7px;
+}
+
+/* Builder mode indicator strip at top of page */
+.sha-builder-mode-bar {
+    position: fixed;
+    top: 32px;
+    left: 0;
+    right: 0;
+    z-index: 99990;
+    background: linear-gradient(135deg, #f0833a 0%, #e0752e 100%);
+    color: #fff;
+    text-align: center;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 12px rgba(240, 131, 58, 0.3);
+}
+
+.sha-builder-mode-bar span {
+    opacity: 0.9;
+}
+
+/* ===========================================
+   INLINE EDITING
+   =========================================== */
+.sha-editing {
+    outline: 3px solid #f0833a !important;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.sha-editing > * {
+    cursor: text;
+    caret-color: #f0833a;
+}
+
+.sha-inline-edit-bar {
+    position: fixed;
+    top: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    background: #1a1a2a;
+    border: 1px solid #f0833a;
+    border-radius: 10px;
+    padding: 6px 12px;
+    z-index: 100000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    align-items: center;
+}
+
+.sha-inline-edit-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #f0833a;
+    margin-right: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    white-space: nowrap;
+}
+
+.sha-inline-edit-bar .sha-tb-btn {
+    background: #2d2d44;
+    color: #c0c0d8;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-inline-edit-bar .sha-tb-btn:hover {
+    background: #3d3d5a;
+    color: #f0833a;
+}
+
+.sha-inline-edit-bar .sha-tb-btn.sha-tb-primary {
+    background: #f0833a;
+    color: #fff;
+}
+
+.sha-inline-edit-bar .sha-tb-btn.sha-tb-primary:hover {
+    background: #e0752e;
+}
+
+/* ===========================================
+   ELEMENT INSPECTOR OVERLAY
+   =========================================== */
+.sha-inspecting {
+    outline: 2px solid #f0833a !important;
+    outline-offset: -1px;
+}
+
+.sha-inspect-overlay {
+    position: fixed;
+    z-index: 100005;
+    pointer-events: none;
+    background: rgba(240, 131, 58, 0.08);
+    border: 2px solid #f0833a;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.sha-inspect-tag {
+    position: absolute;
+    top: -22px;
+    left: -1px;
+    background: #f0833a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 2px 8px;
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+/* ===========================================
+   INSPECT BAR
+   =========================================== */
+#sha-inspect-bar {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a1a2e;
+    border: 1px solid #f0833a;
+    border-radius: 10px;
+    padding: 6px 14px;
+    z-index: 100020;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+}
+
+.sha-inspect-bar-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #f0833a;
+    margin-right: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    white-space: nowrap;
+}
+
+#sha-inspect-bar .sha-tb-btn {
+    background: #2d2d44;
+    color: #c0c0d8;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: normal;
+}
+
+#sha-inspect-bar .sha-tb-btn:hover {
+    background: #3d3d5a;
+    color: #f0833a;
+}
+
+#sha-inspect-bar .sha-tb-btn.sha-tb-primary {
+    background: #f0833a;
+    color: #fff;
+}
+
+#sha-inspect-bar .sha-tb-btn.sha-tb-primary:hover {
+    background: #e0752e;
+}
+
+/* ===========================================
+   PROPERTIES PANEL
+   =========================================== */
+#sha-props-panel {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 320px;
+    max-height: calc(100vh - 140px);
+    background: #1a1a2e;
+    border: 1px solid #2d2d44;
+    border-radius: 12px;
+    z-index: 100015;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.sha-props-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #22223a;
+    border-bottom: 1px solid #2d2d44;
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
+}
+
+.sha-props-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e0e0f0;
+    letter-spacing: 0.3px;
+}
+
+.sha-props-close {
+    background: none;
+    border: none;
+    color: #6a6a8a;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.12s;
+}
+
+.sha-props-close:hover {
+    color: #f0833a;
+}
+
+.sha-props-tabs {
+    display: flex;
+    background: #1e1e34;
+    border-bottom: 1px solid #2d2d44;
+    flex-shrink: 0;
+}
+
+.sha-props-tab {
+    flex: 1;
+    padding: 8px 6px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #7a7a9a;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-align: center;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    font-family: inherit;
+}
+
+.sha-props-tab:hover {
+    color: #c0c0e0;
+}
+
+.sha-props-tab.active {
+    color: #f0833a;
+    border-bottom-color: #f0833a;
+}
+
+.sha-props-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px;
+}
+
+.sha-props-content {
+    display: none;
+}
+
+.sha-props-content.active {
+    display: block;
+}
+
+.sha-props-empty {
+    color: #5a5a7a;
+    font-size: 12px;
+    text-align: center;
+    padding: 24px 8px;
+    font-style: italic;
+}
+
+.sha-props-group {
+    margin-bottom: 12px;
+}
+
+.sha-props-group-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #7a7a9a;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #28283e;
+}
+
+.sha-props-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 11px;
+    color: #b0b0c8;
+}
+
+.sha-props-field > span {
+    width: 80px;
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.sha-props-field input[type="text"],
+.sha-props-field select,
+.sha-props-field input[type="range"] {
+    flex: 1;
+    min-width: 0;
+}
+
+.sha-props-field input[type="text"],
+.sha-props-field select {
+    background: #14142a;
+    border: 1px solid #2d2d44;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: #d0d0e8;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    outline: none;
+    transition: border-color 0.12s;
+    height: 28px;
+    box-sizing: border-box;
+}
+
+.sha-props-field input[type="text"]:focus,
+.sha-props-field select:focus {
+    border-color: #f0833a;
+}
+
+.sha-props-field select {
+    cursor: pointer;
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
+.sha-props-field input[type="range"] {
+    padding: 0;
+    height: 20px;
+    accent-color: #f0833a;
+    background: transparent;
+}
+
+.sha-props-field input[type="text"]::placeholder {
+    color: #4a4a6a;
+}
+
+.sha-props-field-wide {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+}
+
+.sha-props-field-wide > span {
+    width: auto;
+}
+
+.sha-props-field-wide input[type="text"] {
+    width: 100%;
+}
+
+.sha-props-custom-css {
+    width: 100%;
+    min-height: 60px;
+    max-height: 120px;
+    background: #14142a;
+    border: 1px solid #2d2d44;
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-size: 11px;
+    color: #d0d0e8;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.12s;
+}
+
+.sha-props-custom-css:focus {
+    border-color: #f0833a;
+}
+
+.sha-props-text-content {
+    width: 100%;
+    min-height: 50px;
+    max-height: 120px;
+    background: #14142a;
+    border: 1px solid #2d2d44;
+    border-radius: 5px;
+    padding: 6px 8px;
+    font-size: 11px;
+    color: #d0d0e8;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    outline: none;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.12s;
+    line-height: 1.5;
+}
+
+.sha-props-text-content:focus {
+    border-color: #f0833a;
+}
+
+.sha-props-footer {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid #2d2d44;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.sha-props-footer .sha-btn-cancel {
+    background: #28283e;
+    color: #a0a0b8;
+    border: 1px solid #38384e;
+    padding: 7px 16px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: inherit;
+}
+
+.sha-props-footer .sha-btn-cancel:hover {
+    background: #38384e;
+    color: #dcdce4;
+}
+
+.sha-props-footer .sha-btn-primary {
+    background: #f0833a;
+    color: #fff;
+    border: none;
+    padding: 7px 16px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    font-family: inherit;
+}
+
+.sha-props-footer .sha-btn-primary:hover {
+    background: #e0752e;
+}
+
+.sha-eff-val {
+    width: 28px !important;
+    text-align: right;
+    font-size: 10px;
+    color: #8a8aaa;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+@media (max-width: 782px) {
+    .sha-builder-mode-bar {
+        top: 46px;
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    .sha-section-edit-btn .sha-section-edit-label {
+        display: none;
+    }
+    .sha-floating-toolbar {
+        bottom: 10px;
+        padding: 4px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .sha-tb-btn {
+        padding: 5px 10px;
+        font-size: 10.5px;
+    }
+}

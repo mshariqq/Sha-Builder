@@ -6,10 +6,8 @@ if (!defined('ABSPATH')) {
 class Sha_Builder_Admin {
 
     public function __construct() {
-        add_action('admin_menu', array($this, 'add_builder_page_fallback'));
         add_action('admin_menu', array($this, 'add_main_admin_menu'), 9);
         add_action('admin_init', array($this, 'register_settings'));
-        add_action('admin_init', array($this, 'maybe_flush_rewrite'));
         add_filter('page_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('post_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
         add_filter('sha_header_row_actions', array($this, 'add_edit_with_sha_button'), 10, 2);
@@ -20,17 +18,6 @@ class Sha_Builder_Admin {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_edit_screen_script'));
         add_filter('redirect_post_location', array($this, 'redirect_after_builder_save'), 10, 2);
         add_filter('admin_body_class', array($this, 'body_class'));
-    }
-
-    public function maybe_flush_rewrite() {
-        $installed_version = get_option('sha_builder_version', '0');
-        if ($installed_version !== SHA_BUILDER_VERSION) {
-            global $wp_rewrite;
-            if ($wp_rewrite) {
-                $wp_rewrite->flush_rules();
-            }
-            update_option('sha_builder_version', SHA_BUILDER_VERSION);
-        }
     }
 
     public function add_edit_with_sha_button($actions, $post) {
@@ -285,94 +272,7 @@ class Sha_Builder_Admin {
         include SHA_BUILDER_PATH . 'admin/templates/globals-page.php';
     }
 
-    public function add_builder_page_fallback() {
-        add_submenu_page(
-            null,
-            __('Sha Builder (fallback)', 'sha-builder'),
-            __('Sha Builder (fallback)', 'sha-builder'),
-            'edit_posts',
-            'sha-builder-fallback',
-            array($this, 'render_builder_page_fallback')
-        );
-    }
 
-    public function render_builder_page_fallback() {
-        if (!is_user_logged_in()) {
-            wp_die(__('You must be logged in to access the builder.', 'sha-builder'), 401);
-        }
-
-        if (!isset($_GET['post_id'])) {
-            wp_die(__('No page selected.', 'sha-builder'));
-        }
-
-        $post_id = intval($_GET['post_id']);
-        $post = get_post($post_id);
-        if (!$post || !in_array($post->post_type, Sha_Builder_Main::get_supported_post_types(), true)) {
-            wp_die(__('Invalid page.', 'sha-builder'), 404);
-        }
-        if (!current_user_can('edit_post', $post_id)) {
-            wp_die(__('Permission denied.', 'sha-builder'), 403);
-        }
-
-        if (!defined('SHA_BUILDER_IS_BUILDER')) {
-            define('SHA_BUILDER_IS_BUILDER', true);
-        }
-
-        while (ob_get_level()) {
-            ob_end_clean();
-        }
-
-        $saved_data = get_post_meta($post_id, '_sha_builder_data', true);
-        if (!is_array($saved_data)) {
-            $saved_data = array(
-                'html' => '<div style="padding:60px 40px;text-align:center;font-family:Arial,sans-serif;color:#333;"><h1 style="margin:0 0 12px;font-size:28px;">Start Building</h1><p style="font-size:16px;color:#666;">Add your HTML code in the editor panel and click Render.</p></div>',
-                'css'  => '',
-                'js'   => '',
-            );
-        }
-
-        $main = Sha_Builder_Main::instance();
-        if (method_exists($main, 'send_security_headers')) {
-            $main->send_security_headers();
-        }
-
-        show_admin_bar(false);
-
-        wp_enqueue_style(
-            'sha-builder-builder',
-            SHA_BUILDER_URL . 'admin/css/builder.css',
-            array(),
-            SHA_BUILDER_VERSION
-        );
-
-        wp_enqueue_script(
-            'sha-builder-builder',
-            SHA_BUILDER_URL . 'admin/js/builder.js',
-            array('jquery'),
-            SHA_BUILDER_VERSION,
-            true
-        );
-
-        wp_localize_script('sha-builder-builder', 'shaBuilder', array(
-            'ajaxUrl'   => admin_url('admin-ajax.php'),
-            'nonce'     => wp_create_nonce('sha_builder_nonce'),
-            'postId'    => $post_id,
-            'closeUrl'  => admin_url('edit.php?post_type=' . urlencode(get_post_type($post_id))),
-            'globalCss' => get_option('sha_builder_global_css', ''),
-            'globalJs'  => get_option('sha_builder_global_js', ''),
-            'strings'   => array(
-                'saveSuccess' => __('Page saved successfully!', 'sha-builder'),
-                'saveError'   => __('Error saving page. Please try again.', 'sha-builder'),
-                'saving'      => __('Saving...', 'sha-builder'),
-                'save'        => __('Save', 'sha-builder'),
-                'render'      => __('Render', 'sha-builder'),
-                'unsaved'     => __('You have unsaved changes. Are you sure you want to leave?', 'sha-builder'),
-            ),
-        ));
-
-        include SHA_BUILDER_PATH . 'admin/templates/builder-page.php';
-        exit;
-    }
 
     public function enqueue_list_assets($hook) {
         if (!in_array($hook, array('edit.php', 'post.php', 'post-new.php'), true)) {
@@ -386,9 +286,6 @@ class Sha_Builder_Admin {
     }
 
     public function body_class($classes) {
-        if (isset($_GET['page']) && 'sha-builder-fallback' === $_GET['page']) {
-            $classes .= ' sha-builder-active';
-        }
         return $classes;
     }
 
