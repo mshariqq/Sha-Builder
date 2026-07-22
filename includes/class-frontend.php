@@ -397,6 +397,15 @@ class Sha_Builder_Frontend {
             return $template;
         }
 
+        // If this is a Header or Footer CPT, use a minimal full‑canvas template.
+        $post_type = get_post_type($post_id);
+        if ( in_array( $post_type, array('sha_header','sha_footer'), true ) ) {
+            $file = SHA_BUILDER_PATH . 'public/templates/template-full-canvas.php';
+            if ( file_exists( $file ) ) {
+                return $file;
+            }
+        }
+
         $page_template = get_page_template_slug($post_id);
 
         if ('template-full-blank.php' === $page_template) {

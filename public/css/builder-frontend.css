@@ -1088,6 +1088,82 @@
     font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
 
+/* sha-field-row for color picker + text input combos */
+.sha-field-row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.sha-field-row input[type="text"] {
+    flex: 1;
+    min-width: 0;
+}
+
+.sha-field-row input[type="color"].sha-css-color-picker {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #2d2d44;
+    border-radius: 4px;
+    cursor: pointer;
+    background: none;
+    flex-shrink: 0;
+}
+
+.sha-field-row input[type="color"].sha-css-color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+.sha-field-row input[type="color"].sha-css-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: 2px;
+}
+
+.sha-range-label {
+    width: 28px;
+    text-align: right;
+    font-size: 10px;
+    color: #8a8aaa;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    flex-shrink: 0;
+}
+
+/* Pseudo-state tabs */
+.sha-pseudo-tab.active {
+    background: #2d2d4a !important;
+    color: #f0833a !important;
+}
+
+.sha-pseudo-tab:hover {
+    background: #25253e !important;
+    color: #c0c0e0 !important;
+}
+
+/* Select dropdowns in properties panel */
+.sha-props-field select[data-css] {
+    flex: 1;
+    min-width: 0;
+    background: #14142a;
+    border: 1px solid #2d2d44;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 11px;
+    color: #d0d0e8;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    outline: none;
+    transition: border-color 0.12s;
+    height: 28px;
+    box-sizing: border-box;
+    cursor: pointer;
+    appearance: auto;
+    -webkit-appearance: auto;
+}
+
+.sha-props-field select[data-css]:focus {
+    border-color: #f0833a;
+}
+
 @media (max-width: 782px) {
     .sha-builder-mode-bar {
         top: 46px;

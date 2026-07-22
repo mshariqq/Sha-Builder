@@ -3,7 +3,7 @@
  * Plugin Name:       Sha Builder
  * Plugin URI:        https://github.com/mshariqq/Sha-Builder
  * Description:       A powerful visual page builder for WordPress — edit HTML, CSS, and JS visually with live preview. Select elements, edit properties, and save like Elementor.
- * Version:           2.0.1
+ * Version:           2.0.2
  * Author:            Muhammed Shariq
  * Author URI:        https://mshariqq.github.io
  * License:           GPL v2 or later
