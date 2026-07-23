@@ -63,5 +63,32 @@ class Sha_Builder_CPT {
             'hierarchical'       => false,
             'supports'           => array('title', 'editor', 'revisions'),
         ));
+
+        register_post_type('sha_template', array(
+            'labels'          => array(
+                'name'               => __('Templates', 'sha-builder'),
+                'singular_name'      => __('Template', 'sha-builder'),
+                'add_new'            => __('Add New Template', 'sha-builder'),
+                'add_new_item'       => __('Add New Template', 'sha-builder'),
+                'edit_item'          => __('Edit Template', 'sha-builder'),
+                'new_item'           => __('New Template', 'sha-builder'),
+                'view_item'          => __('View Template', 'sha-builder'),
+                'search_items'       => __('Search Templates', 'sha-builder'),
+                'not_found'          => __('No templates found', 'sha-builder'),
+                'not_found_in_trash' => __('No templates found in Trash', 'sha-builder'),
+                'all_items'          => __('All Templates', 'sha-builder'),
+            ),
+            'public'             => true,
+            'publicly_queryable' => true,
+            'show_ui'            => true,
+            'show_in_menu'       => false,
+            'query_var'          => false,
+            'rewrite'            => false,
+            'exclude_from_search' => true,
+            'capability_type'    => 'page',
+            'has_archive'        => false,
+            'hierarchical'       => false,
+            'supports'           => array('title', 'editor', 'revisions'),
+        ));
     }
 }

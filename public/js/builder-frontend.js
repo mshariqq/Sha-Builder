@@ -28,9 +28,16 @@
             bar.className = 'sha-builder-mode-bar';
             bar.innerHTML = '<span>BUILDER MODE — Right-click any section or click <strong>Edit HTML</strong> button to edit code</span>';
             document.body.insertBefore(bar, document.body.firstChild);
-            if (document.getElementById('wpadminbar')) {
-                bar.style.top = '32px';
-            }
+
+            var pushContent = function () {
+                var adminBarH = document.getElementById('wpadminbar') ? 32 : 0;
+                if (document.getElementById('wpadminbar')) {
+                    bar.style.top = '32px';
+                }
+                document.body.style.paddingTop = (adminBarH + bar.offsetHeight) + 'px';
+            };
+            pushContent();
+            window.addEventListener('resize', pushContent);
         },
 
         loadSectionsData: function () {

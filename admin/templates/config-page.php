@@ -31,6 +31,145 @@ $plugin_data = get_plugin_data(SHA_BUILDER_FILE, false, false);
 <div class="wrap">
     <h1><?php esc_html_e('SHA BUILDER Config', 'sha-builder'); ?></h1>
 
+    <div style="background:#f0f4ff;border:1px solid #c0d0f0;border-radius:8px;padding:20px 24px;margin:16px 0;max-width:680px;">
+        <h2 style="margin:0 0 12px;font-size:15px;color:#1d2327;">
+            <a href="#" onclick="jQuery(this).parent().next().toggle();return false;" style="text-decoration:none;color:inherit;">
+                &#x1F4D6; <?php esc_html_e('How Sha Builder Templates Work', 'sha-builder'); ?>
+                <span style="font-size:12px;color:#666;margin-left:8px;"><?php esc_html_e('(click to expand)', 'sha-builder'); ?></span>
+            </a>
+        </h2>
+        <div style="display:none;font-size:13px;line-height:1.7;color:#333;">
+            <hr style="margin:4px 0 14px;border:none;border-top:1px solid #dde4f0;">
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">1. Creating a Template</h3>
+            <p style="margin:0 0 10px;">
+                Go to <strong>Sha Builder &rarr; Templates &rarr; Add New Template</strong>.
+                Give it a title, choose which content it applies to (see below), then click
+                <strong>"Edit with Sha Builder"</strong> to build the layout visually.
+                Save when done.
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">2. Template Target (Post Types)</h3>
+            <p style="margin:0 0 10px;">
+                In the <strong>Template Target</strong> meta box, select a post type
+                (e.g., "Posts", "Pages", "Products"). The template will override the
+                content area of every post of that type. Check <strong>"Apply to archive pages"</strong>
+                to also override category, tag, and archive pages.
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">3. Template Conditions (Taxonomy Filtering)</h3>
+            <p style="margin:0 0 10px;">
+                By default a template applies to <strong>all</strong> posts of the chosen type.
+                Uncheck "Apply to all" to limit it — enter comma-separated term slugs
+                (e.g. <code>shoes,boots</code>) for each taxonomy. All conditions must match (AND logic).
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">4. Theme Builder (Special Pages)</h3>
+            <p style="margin:0 0 10px;">
+                The <strong>Theme Builder</strong> meta box lets you assign a template to:
+                404 page, Search results, Blog/Posts page, Front page,
+                Author/Date archives, and WooCommerce pages (Cart, Checkout, My Account).
+                One template can handle multiple locations.
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">5. Priority / Override Chain</h3>
+            <p style="margin:0 0 10px;">
+                When a page loads, Sha Builder checks in this order:
+            </p>
+            <ol style="margin:0 0 10px 20px;">
+                <li><strong>Post's own builder content</strong> — if the post was built directly with Sha Builder, that takes priority.</li>
+                <li><strong>Post type template</strong> — a template assigned to that post type (with matching conditions).</li>
+                <li><strong>Theme Builder template</strong> — a template assigned to the current special page type (404, search, etc.).</li>
+                <li><strong>Normal WordPress content</strong> — fallback if nothing above matches.</li>
+            </ol>
+            <p style="margin:0 0 10px;">For post type templates, if multiple templates exist, the newest one with matching conditions wins.</p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">6. Conditional Visibility (Per-Section)</h3>
+            <p style="margin:0 0 10px;">
+                In the builder, each section in the list has a visibility dot:
+            </p>
+            <ul style="margin:0 0 10px 20px;">
+                <li><strong style="color:#555;">Gray circle</strong> — visible to everyone (default).</li>
+                <li><strong style="color:#f0a030;">Orange filled</strong> — visible only to logged-in users.</li>
+                <li><strong style="color:#60a0e0;">Blue half</strong> — visible only to logged-out visitors.</li>
+                <li><strong style="color:#e06060;">Red target</strong> — visible only to administrators.</li>
+            </ul>
+            <p style="margin:0 0 10px;">Click the dot to cycle through states. Hidden sections' CSS and JS are also suppressed.</p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">7. Dynamic Shortcodes</h3>
+            <p style="margin:0 0 10px;">
+                Use these shortcodes in your template HTML to display the <strong>actual post's data</strong>:
+            </p>
+            <table style="border-collapse:collapse;width:100%;font-size:12px;">
+                <tr style="background:#e8edf8;">
+                    <th style="padding:4px 8px;text-align:left;border:1px solid #d0d8e8;">Shortcode</th>
+                    <th style="padding:4px 8px;text-align:left;border:1px solid #d0d8e8;">Description</th>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="post_title"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Post title</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="post_content"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Full content (with shortcodes & formatting)</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="post_excerpt"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Excerpt or trimmed content</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="featured_image" size="large"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Featured image HTML (sizes: thumbnail, medium, large, full)</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="featured_image_url" size="full"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Featured image URL only</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="permalink"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Post URL</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="post_date" format="F j, Y"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Formatted publish date</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="author"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Author display name</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_field name="slug"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Post slug</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_meta key="_price" fallback="N/A"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Any custom field / meta value</td>
+                </tr>
+                <tr>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;"><code>[sha_terms taxonomy="category" separator=", " link="true"]</code></td>
+                    <td style="padding:3px 8px;border:1px solid #d0d8e8;">Taxonomy terms (set link="true" for linked terms)</td>
+                </tr>
+            </table>
+            <p style="margin:8px 0 0;font-size:11px;color:#888;">
+                All shortcodes resolve to the current post's data. Use them inside your section HTML to create dynamic templates.
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">8. Headers &amp; Footers</h3>
+            <p style="margin:0 0 10px;">
+                Create headers and footers separately under <strong>Sha Builder &rarr; Headers / Footers</strong>.
+                Assign them globally in the form below, or override per-page from any post's Sha Builder meta box.
+                Templates use the active header/footer automatically.
+            </p>
+
+            <h3 style="font-size:14px;margin:16px 0 6px;">9. Post List Column</h3>
+            <p style="margin:0 0 10px;">
+                All post type list tables now show a <strong>"Template"</strong> column indicating:
+                <strong style="color:#f0833a;">Custom</strong> (built directly with Sha Builder),
+                <strong>Template: [Name]</strong> (using a post type template), or &mdash; (no template).
+            </p>
+        </div>
+    </div>
+
     <?php if (!empty($update_info['has_update'])) : ?>
     <div style="background:linear-gradient(135deg,#1a3a1a 0%,#2a5a2a 100%);border-radius:10px;padding:16px 22px;margin:20px 0;max-width:620px;color:#c8e6c9;border:1px solid rgba(76,175,80,0.3);display:flex;align-items:center;gap:12px;">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
@@ -122,4 +261,73 @@ $plugin_data = get_plugin_data(SHA_BUILDER_FILE, false, false);
         </table>
         <?php submit_button(); ?>
     </form>
+
+    <div style="max-width:600px;margin-top:32px;">
+        <h2><?php esc_html_e('Active Post Type Templates', 'sha-builder'); ?></h2>
+        <p><?php esc_html_e('These templates override the content area for their assigned post types:', 'sha-builder'); ?></p>
+        <table class="wp-list-table widefat fixed striped" style="margin-top:12px;">
+            <thead>
+                <tr>
+                    <th><?php esc_html_e('Template', 'sha-builder'); ?></th>
+                    <th><?php esc_html_e('Applies To', 'sha-builder'); ?></th>
+                    <th><?php esc_html_e('Scope', 'sha-builder'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $templates = get_posts(array(
+                    'post_type'      => 'sha_template',
+                    'posts_per_page' => -1,
+                    'post_status'    => 'publish',
+                    'orderby'        => 'title',
+                    'order'          => 'ASC',
+                ));
+                if ($templates) :
+                    foreach ($templates as $t) :
+                        $pt = get_post_meta($t->ID, '_sha_template_post_type', true);
+                        $pt_obj = $pt ? get_post_type_object($pt) : null;
+                        $is_archive = (bool) get_post_meta($t->ID, '_sha_template_archive', true);
+                        $conditions = get_post_meta($t->ID, '_sha_template_conditions', true);
+                        ?>
+                        <tr>
+                            <td>
+                                <a href="<?php echo esc_url(admin_url('post.php?action=edit&post=' . intval($t->ID))); ?>">
+                                    <?php echo esc_html($t->post_title); ?>
+                                </a>
+                            </td>
+                            <td>
+                                <?php if ($pt_obj) : ?>
+                                    <?php echo esc_html($pt_obj->labels->singular_name); ?>
+                                <?php else : ?>
+                                    <em style="color:#999;"><?php esc_html_e('Not assigned', 'sha-builder'); ?></em>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php
+                                $scope = array();
+                                if ($pt_obj) $scope[] = __('Singular', 'sha-builder');
+                                if ($is_archive) $scope[] = __('Archive', 'sha-builder');
+                                if (!empty($conditions['apply_all']) || empty($conditions)) {
+                                    $scope[] = __('All', 'sha-builder');
+                                } else {
+                                    $scope[] = __('Conditional', 'sha-builder');
+                                }
+                                echo esc_html(implode(' + ', $scope));
+                                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach;
+                else : ?>
+                    <tr>
+                        <td colspan="3"><em><?php esc_html_e('No templates created yet.', 'sha-builder'); ?></em></td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        <p>
+            <a href="<?php echo esc_url(admin_url('post-new.php?post_type=sha_template')); ?>" class="button">
+                <?php esc_html_e('Create New Template', 'sha-builder'); ?>
+            </a>
+        </p>
+    </div>
 </div>

@@ -5,6 +5,9 @@ if (!defined('ABSPATH')) {
 
 class Sha_Builder_Frontend {
 
+    public static $matched_archive_template_id = 0;
+    public static $original_post_id = 0;
+
     public function __construct() {
         add_filter('the_content', array($this, 'render_frontend_html'), 999);
         add_action('wp_head', array($this, 'render_frontend_css'), 999);
@@ -52,54 +55,97 @@ class Sha_Builder_Frontend {
     }
 
     public function render_frontend_html($content) {
+        static $rendering = false;
+        if ($rendering) {
+            return $content;
+        }
+
         if (!is_singular() || !in_the_loop() || !is_main_query()) {
             return $content;
         }
 
-        $post_id = get_the_ID();
-        $data = $this->get_data($post_id);
-        if (!$data || empty($data['sections'])) {
-            return $content;
-        }
+        $rendering = true;
 
-        remove_filter('the_content', 'wpautop');
-        remove_filter('the_content', 'wptexturize');
+        try {
+            $post_id = get_the_ID();
+            self::$original_post_id = $post_id;
+            $data = $this->get_data($post_id);
 
-        $executor = Sha_Builder_PHP_Executor::instance();
-        $out = '';
-
-        foreach ($data['sections'] as $sec) {
-            if (!is_array($sec) || empty($sec['html'])) {
-                continue;
+            // Fall back to post type template if this post has no builder content
+            if ((!$data || empty($data['sections'])) && !$this->is_sha_post_type(get_post_type($post_id))) {
+                $template_id = $this->get_active_template_for_post_type(get_post_type($post_id));
+                if ($template_id) {
+                    self::$original_post_id = $post_id;
+                    $post_id = $template_id;
+                    $data = $this->get_data($template_id);
+                }
             }
-            $sec_id = isset($sec['id']) ? esc_attr($sec['id']) : '';
-            $html_file = isset($sec['_html_file']) ? $sec['_html_file'] : null;
-            $sec_html = $executor->execute_html($post_id, $sec_id, $sec['html'], $html_file);
-            $section_attrs = apply_filters('sha_builder_section_attributes', array(
-                'id' => 'sha-section-' . $sec_id,
-                'class' => 'sha-builder-section',
-            ), $sec_id);
-            $attr_str = '';
-            foreach ($section_attrs as $key => $val) {
-                $attr_str .= ' ' . $key . '="' . esc_attr($val) . '"';
-            }
-            $out .= '<div' . $attr_str . '>'
-                . $sec_html
-                . '</div>' . "\n";
-        }
 
-        return '<div id="sha-builder-content-' . intval($post_id) . '" class="sha-builder-content-area">'
-            . $out
-            . '</div>';
+            if (!$data || empty($data['sections'])) {
+                return $content;
+            }
+
+            remove_filter('the_content', 'wpautop');
+            remove_filter('the_content', 'wptexturize');
+
+            $executor = Sha_Builder_PHP_Executor::instance();
+            $out = '';
+
+            foreach ($data['sections'] as $sec) {
+                if (!is_array($sec) || empty($sec['html'])) {
+                    continue;
+                }
+                if (!$this->should_render_section($sec)) {
+                    continue;
+                }
+                $sec_id = isset($sec['id']) ? esc_attr($sec['id']) : '';
+                $html_file = isset($sec['_html_file']) ? $sec['_html_file'] : null;
+                $sec_html = $executor->execute_html($post_id, $sec_id, $sec['html'], $html_file);
+                $sec_html = do_shortcode($sec_html);
+                $section_attrs = apply_filters('sha_builder_section_attributes', array(
+                    'id' => 'sha-section-' . $sec_id,
+                    'class' => 'sha-builder-section',
+                ), $sec_id);
+                $attr_str = '';
+                foreach ($section_attrs as $key => $val) {
+                    $attr_str .= ' ' . $key . '="' . esc_attr($val) . '"';
+                }
+                $out .= '<div' . $attr_str . '>'
+                    . $sec_html
+                    . '</div>' . "\n";
+            }
+
+            return '<div id="sha-builder-content-' . intval($post_id) . '" class="sha-builder-content-area">'
+                . $out
+                . '</div>';
+        } finally {
+            $rendering = false;
+        }
     }
 
     public function render_frontend_css() {
-        if (!is_singular()) {
+        if (!is_singular() && !self::$matched_archive_template_id) {
             return;
         }
 
         $post_id = get_the_ID();
-        $data = $this->get_data($post_id);
+        $data = null;
+
+        if (self::$matched_archive_template_id) {
+            $post_id = self::$matched_archive_template_id;
+            $data = $this->get_data($post_id);
+        } else {
+            $data = $this->get_data($post_id);
+
+            if ((!$data || empty($data['sections'])) && !$this->is_sha_post_type(get_post_type($post_id))) {
+                $template_id = $this->get_active_template_for_post_type(get_post_type($post_id));
+                if ($template_id) {
+                    $post_id = $template_id;
+                    $data = $this->get_data($template_id);
+                }
+            }
+        }
+
         if (!$data || empty($data['sections'])) {
             return;
         }
@@ -108,6 +154,7 @@ class Sha_Builder_Frontend {
 
         // Per-section CSS
         foreach ($data['sections'] as $sec) {
+            if (!$this->should_render_section($sec)) continue;
             if (!empty($sec['css'])) {
                 $cleaned = preg_replace('/^html(?::[^\s>]*)?\s*>\s*body(?::[^\s>]*)?\s*>\s*/im', '', $sec['css']);
                 $css_parts[] = $cleaned;
@@ -150,12 +197,28 @@ class Sha_Builder_Frontend {
     }
 
     public function render_frontend_js() {
-        if (!is_singular()) {
+        if (!is_singular() && !self::$matched_archive_template_id) {
             return;
         }
 
         $post_id = get_the_ID();
-        $data = $this->get_data($post_id);
+        $data = null;
+
+        if (self::$matched_archive_template_id) {
+            $post_id = self::$matched_archive_template_id;
+            $data = $this->get_data($post_id);
+        } else {
+            $data = $this->get_data($post_id);
+
+            if ((!$data || empty($data['sections'])) && !$this->is_sha_post_type(get_post_type($post_id))) {
+                $template_id = $this->get_active_template_for_post_type(get_post_type($post_id));
+                if ($template_id) {
+                    $post_id = $template_id;
+                    $data = $this->get_data($template_id);
+                }
+            }
+        }
+
         if (!$data || empty($data['sections'])) {
             return;
         }
@@ -164,6 +227,7 @@ class Sha_Builder_Frontend {
 
         // Per-section JS
         foreach ($data['sections'] as $sec) {
+            if (!$this->should_render_section($sec)) continue;
             if (!empty($sec['js'])) {
                 $js_parts[] = $sec['js'];
             }
@@ -182,11 +246,26 @@ class Sha_Builder_Frontend {
     }
 
     public function enqueue_styles() {
-        if (!is_singular()) {
+        if (!is_singular() && !self::$matched_archive_template_id) {
             return;
         }
         $post_id = get_the_ID();
-        if (!$this->has_builder_content($post_id)) {
+
+        $has_content = false;
+
+        if (self::$matched_archive_template_id) {
+            $has_content = $this->has_builder_content(self::$matched_archive_template_id);
+        } else {
+            $has_content = $this->has_builder_content($post_id);
+            if (!$has_content && !$this->is_sha_post_type(get_post_type($post_id))) {
+                $template_id = $this->get_active_template_for_post_type(get_post_type($post_id));
+                if ($template_id && $this->has_builder_content($template_id)) {
+                    $has_content = true;
+                }
+            }
+        }
+
+        if (!$has_content) {
             return;
         }
 
@@ -353,6 +432,131 @@ class Sha_Builder_Frontend {
         return intval(get_option('sha_builder_active_footer', 0));
     }
 
+    public function is_sha_post_type($post_type) {
+        return strpos($post_type, 'sha_') === 0;
+    }
+
+    public function get_active_template_for_location($location) {
+        $templates = get_posts(array(
+            'post_type'      => 'sha_template',
+            'posts_per_page' => 1,
+            'post_status'    => 'publish',
+            'meta_query'     => array(
+                array(
+                    'key'     => '_sha_template_theme_locations',
+                    'value'   => '"' . $location . '"',
+                    'compare' => 'LIKE',
+                ),
+            ),
+            'orderby' => 'date',
+            'order'   => 'DESC',
+        ));
+        return !empty($templates) ? intval($templates[0]->ID) : 0;
+    }
+
+    public function get_active_template_for_post_type($post_type, $is_archive = false) {
+        if ($this->is_sha_post_type($post_type)) {
+            return 0;
+        }
+        $templates = get_posts(array(
+            'post_type'      => 'sha_template',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'meta_key'       => '_sha_template_post_type',
+            'meta_value'     => $post_type,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        ));
+        if (empty($templates)) {
+            return 0;
+        }
+
+        $post_id = $is_archive ? 0 : get_the_ID();
+
+        foreach ($templates as $t) {
+            $t_is_archive = (bool) get_post_meta($t->ID, '_sha_template_archive', true);
+
+            // For archive requests, only match templates with archive flag
+            if ($is_archive && !$t_is_archive) continue;
+            // For singular requests, skip templates that are archive-only
+            if (!$is_archive && $t_is_archive && !get_post_meta($t->ID, '_sha_template_post_type', true)) continue;
+
+            $conditions = get_post_meta($t->ID, '_sha_template_conditions', true);
+            if ($is_archive) {
+                // For archives, only match if apply_all (no term filtering for simplicity)
+                if (empty($conditions) || !empty($conditions['apply_all'])) {
+                    return intval($t->ID);
+                }
+            } elseif ($this->template_matches_conditions($t->ID, $conditions, $post_id)) {
+                return intval($t->ID);
+            }
+        }
+
+        return 0;
+    }
+
+    public function should_render_section($sec) {
+        $visibility = isset($sec['visibility']) ? $sec['visibility'] : 'all';
+        if ($visibility === 'all' || empty($visibility)) {
+            return true;
+        }
+        if ($visibility === 'logged_in') {
+            return is_user_logged_in();
+        }
+        if ($visibility === 'logged_out') {
+            return !is_user_logged_in();
+        }
+        if ($visibility === 'admin') {
+            return current_user_can('manage_options');
+        }
+        return true;
+    }
+
+    public function template_matches_conditions($template_id, $conditions, $post_id) {
+        if (empty($conditions) || !empty($conditions['apply_all'])) {
+            return true;
+        }
+        $terms = isset($conditions['terms']) ? $conditions['terms'] : array();
+        if (empty($terms)) {
+            return true;
+        }
+        foreach ($terms as $rule) {
+            if (empty($rule['taxonomy']) || empty($rule['terms'])) continue;
+            $slugs = array_map('trim', explode(',', $rule['terms']));
+            $slugs = array_filter($slugs);
+            if (!has_term($slugs, $rule['taxonomy'], $post_id)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function get_queried_post_type() {
+        if (is_singular()) {
+            return get_post_type();
+        }
+        if (is_category() || is_tag()) {
+            return 'post';
+        }
+        if (is_tax()) {
+            $queried = get_queried_object();
+            if ($queried && isset($queried->taxonomy)) {
+                $tax = get_taxonomy($queried->taxonomy);
+                if ($tax && !empty($tax->object_type)) {
+                    return $tax->object_type[0];
+                }
+            }
+        }
+        if (is_post_type_archive()) {
+            $pt = get_query_var('post_type');
+            return is_array($pt) ? $pt[0] : $pt;
+        }
+        if (is_home()) {
+            return 'post';
+        }
+        return null;
+    }
+
     public function has_custom_header() {
         $header_id = $this->get_effective_header_id();
         if (!$header_id || 'publish' !== get_post_status($header_id)) {
@@ -388,7 +592,61 @@ class Sha_Builder_Frontend {
     }
 
     public function handle_page_template($template) {
-        if (!is_singular() || is_admin() || wp_doing_ajax() || defined('REST_REQUEST')) {
+        if (is_admin() || wp_doing_ajax() || defined('REST_REQUEST')) {
+            return $template;
+        }
+
+        // Check for theme builder special pages (404, search, front page, etc.)
+        $theme_location = '';
+        if (is_404()) {
+            $theme_location = '404';
+        } elseif (is_search()) {
+            $theme_location = 'search';
+        } elseif (is_front_page()) {
+            $theme_location = 'front_page';
+        } elseif (is_home()) {
+            $theme_location = 'home';
+        } elseif (is_author()) {
+            $theme_location = 'author';
+        } elseif (is_date()) {
+            $theme_location = 'date';
+        } elseif (class_exists('WooCommerce')) {
+            if (is_cart()) {
+                $theme_location = 'cart';
+            } elseif (is_checkout()) {
+                $theme_location = 'checkout';
+            } elseif (is_account_page()) {
+                $theme_location = 'my_account';
+            }
+        }
+
+        if ($theme_location) {
+            $location_template_id = $this->get_active_template_for_location($theme_location);
+            if ($location_template_id) {
+                self::$matched_archive_template_id = $location_template_id;
+                $file = SHA_BUILDER_PATH . 'public/templates/template-archive.php';
+                if (file_exists($file)) {
+                    return $file;
+                }
+            }
+        }
+
+        // Check for archive template
+        if (is_archive() || is_home() || is_category() || is_tag() || is_tax()) {
+            $pt = $this->get_queried_post_type();
+            if ($pt) {
+                $archive_template_id = $this->get_active_template_for_post_type($pt, true);
+                if ($archive_template_id) {
+                    self::$matched_archive_template_id = $archive_template_id;
+                    $file = SHA_BUILDER_PATH . 'public/templates/template-archive.php';
+                    if (file_exists($file)) {
+                        return $file;
+                    }
+                }
+            }
+        }
+
+        if (!is_singular()) {
             return $template;
         }
 
@@ -397,11 +655,20 @@ class Sha_Builder_Frontend {
             return $template;
         }
 
-        // If this is a Header or Footer CPT, use a minimal full‑canvas template.
+        // If this is a Header, Footer, or Template CPT, use a minimal full‑canvas template.
         $post_type = get_post_type($post_id);
-        if ( in_array( $post_type, array('sha_header','sha_footer'), true ) ) {
+        if ( in_array( $post_type, array('sha_header','sha_footer','sha_template'), true ) ) {
             $file = SHA_BUILDER_PATH . 'public/templates/template-full-canvas.php';
             if ( file_exists( $file ) ) {
+                return $file;
+            }
+        }
+
+        // If a template is active for this post type, use wrapper.php so the
+        // template sections fully control the page layout (no theme leakage).
+        if ($this->get_active_template_for_post_type($post_type)) {
+            $file = SHA_BUILDER_PATH . 'public/templates/wrapper.php';
+            if (file_exists($file)) {
                 return $file;
             }
         }

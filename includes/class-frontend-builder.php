@@ -46,7 +46,24 @@ class Sha_Builder_Frontend_Builder {
 
         $post_id = get_the_ID();
         $frontend = sha_builder()->get_frontend();
+
+        // Check if post uses a template — show "Edit Template" button
         if (!$frontend->has_builder_content($post_id)) {
+            $post_type = get_post_type($post_id);
+            if (strpos($post_type, 'sha_') !== 0) {
+                $template_id = $frontend->get_active_template_for_post_type($post_type);
+                if ($template_id && $frontend->has_builder_content($template_id)) {
+                    $template_builder_url = Sha_Builder_Main::instance()->get_builder_url($template_id);
+                    $wp_admin_bar->add_node(array(
+                        'id'    => 'sha-builder',
+                        'title' => '<span style="display:flex;align-items:center;gap:6px;">'
+                            . '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f0833a" stroke-width="2.5"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>'
+                            . '<span style="color:#f0833a;font-weight:600;">' . esc_html__('Edit Template', 'sha-builder') . '</span></span>',
+                        'href'  => $template_builder_url,
+                        'meta'  => array('class' => 'sha-builder-admin-btn'),
+                    ));
+                }
+            }
             return;
         }
 

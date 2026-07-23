@@ -12,6 +12,7 @@ class Sha_Builder_Main {
     private $ajax_handler = null;
     private $cpt = null;
     private $frontend_builder = null;
+    private $shortcodes = null;
 
     public static function instance() {
         if (is_null(self::$instance)) {
@@ -33,6 +34,7 @@ class Sha_Builder_Main {
         require_once SHA_BUILDER_PATH . 'includes/class-cpt.php';
         require_once SHA_BUILDER_PATH . 'includes/class-php-executor.php';
         require_once SHA_BUILDER_PATH . 'includes/class-frontend-builder.php';
+        require_once SHA_BUILDER_PATH . 'includes/class-shortcodes.php';
     }
 
     private function init_hooks() {
@@ -44,11 +46,12 @@ class Sha_Builder_Main {
         $this->ajax_handler = new Sha_Builder_Ajax();
         $this->cpt          = new Sha_Builder_CPT();
         $this->frontend_builder = new Sha_Builder_Frontend_Builder();
+        $this->shortcodes = new Sha_Builder_Shortcodes();
     }
 
     // Redirect non‑admin users away from header/footer builder URLs
     public function protect_builder_cpts() {
-        if ( is_singular( array('sha_header','sha_footer') ) && ! current_user_can( 'edit_with_sha_builder' ) ) {
+        if ( is_singular( array('sha_header','sha_footer','sha_template') ) && ! current_user_can( 'edit_with_sha_builder' ) ) {
             // Option 1: redirect to admin dashboard
             wp_redirect( admin_url() );
             exit;
@@ -87,7 +90,7 @@ class Sha_Builder_Main {
     }
 
     public static function get_supported_post_types() {
-        return apply_filters('sha_builder_supported_post_types', array('page', 'post', 'sha_header', 'sha_footer'));
+        return apply_filters('sha_builder_supported_post_types', array('page', 'post', 'sha_header', 'sha_footer', 'sha_template'));
     }
 
     public static function activate() {

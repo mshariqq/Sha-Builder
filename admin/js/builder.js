@@ -222,6 +222,12 @@
                 }
             });
 
+            this.$sectionList.on('click', '.sha-visibility-btn', function (e) {
+                e.stopPropagation();
+                var id = $(this).data('section-id');
+                if (id) self.cycleVisibility(id);
+            });
+
             // Global CSS/JS auto-sync on input
             this.$globalCssInput.add(this.$globalJsInput).on('input', function () {
                 self.markDirty();
@@ -458,9 +464,27 @@
                 var activeClass = (sec.id === this.state.activeSectionId) ? ' active' : '';
                 var isFirst = (i === 0);
                 var isLast = (i === this.state.sections.length - 1);
+                var vis = sec.visibility || 'all';
+                var visIcon = '&#x25CB;';
+                var visTitle = 'Visible to all';
+                var visClass = 'sha-vis-all';
+                if (vis === 'logged_in') {
+                    visIcon = '&#x25CF;';
+                    visTitle = 'Logged-in only';
+                    visClass = 'sha-vis-logged-in';
+                } else if (vis === 'logged_out') {
+                    visIcon = '&#x25D4;';
+                    visTitle = 'Logged-out only';
+                    visClass = 'sha-vis-logged-out';
+                } else if (vis === 'admin') {
+                    visIcon = '&#x25C9;';
+                    visTitle = 'Admin only';
+                    visClass = 'sha-vis-admin';
+                }
                 html += '<div class="sha-section-item' + activeClass + '" draggable="true"'
                     + ' data-section-id="' + this.escAttr(sec.id) + '" data-index="' + i + '">';
                 html += '<span class="sha-section-drag">&#x2630;</span>';
+                html += '<button class="sha-visibility-btn ' + visClass + '" data-section-id="' + this.escAttr(sec.id) + '" title="' + visTitle + '">' + visIcon + '</button>';
                 html += '<span class="sha-section-label">' + this.escHtml(sec.label || 'Section') + '</span>';
                 html += '<span class="sha-section-move-btns">';
                 if (!isFirst) {
@@ -477,6 +501,18 @@
             var $header = this.$sectionList.closest('.sha-section-manager').find('.sha-section-header-label');
             var label = $header.text().replace(/\s*\d*$/, '');
             $header.text(label + ' ' + this.state.sections.length);
+        },
+
+        cycleVisibility: function (id) {
+            var sec = this.state.sections.find(function (s) { return s.id === id; });
+            if (!sec) return;
+            var states = ['all', 'logged_in', 'logged_out', 'admin'];
+            var current = sec.visibility || 'all';
+            var idx = states.indexOf(current);
+            var next = states[(idx + 1) % states.length];
+            sec.visibility = next === 'all' ? undefined : next;
+            this.renderSectionList();
+            this.markDirty();
         },
 
         moveSection: function (fromIdx, toIdx) {

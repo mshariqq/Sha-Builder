@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('SHA_BUILDER_VERSION', '2.0.4');
+define('SHA_BUILDER_VERSION', '2.0.5');
 define('SHA_BUILDER_FILE', __FILE__);
 define('SHA_BUILDER_PATH', plugin_dir_path(__FILE__));
 define('SHA_BUILDER_URL', plugin_dir_url(__FILE__));

@@ -1626,6 +1626,37 @@ html.sha-builder-active #wpadminbar {
     color: #e55;
 }
 
+.sha-visibility-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 0 4px;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.sha-visibility-btn.sha-vis-all {
+    color: #555;
+}
+
+.sha-visibility-btn.sha-vis-logged-in {
+    color: #f0a030;
+}
+
+.sha-visibility-btn.sha-vis-logged-out {
+    color: #60a0e0;
+}
+
+.sha-visibility-btn.sha-vis-admin {
+    color: #e06060;
+}
+
+.sha-visibility-btn:hover {
+    opacity: 0.8;
+}
+
 /* Section count badge */
 .sha-section-count {
     font-size: 10px;

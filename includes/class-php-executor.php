@@ -84,12 +84,7 @@ class Sha_Builder_PHP_Executor {
             return do_shortcode($html ?? '');
         }
 
-        $cached = $this->load_from_cache($post_id, $section_id);
-        if ($cached !== false) {
-            return do_shortcode($cached);
-        }
-
-        return do_shortcode($this->generate_cache($post_id, $html, $section_id));
+        return do_shortcode($this->execute_php($html));
     }
 
     public function flush_cache($post_id, $section_id = '') {
