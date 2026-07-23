@@ -23,6 +23,8 @@ class Sha_Builder_Frontend {
         add_action('update_option_sha_builder_global_css', array($this, 'regenerate_global_files'));
         add_action('add_option_sha_builder_global_js', array($this, 'regenerate_global_files'));
         add_action('update_option_sha_builder_global_js', array($this, 'regenerate_global_files'));
+
+        add_action('init', array($this, 'execute_custom_functions'), 0);
     }
 
     /**
@@ -353,6 +355,22 @@ class Sha_Builder_Frontend {
         }
 
         return $written && $js_written;
+    }
+
+    public function execute_custom_functions() {
+        $code = get_option('sha_builder_global_php', '');
+        if (empty($code) || !is_string($code)) {
+            return;
+        }
+        $code = trim($code);
+        if (empty($code)) {
+            return;
+        }
+        try {
+            eval($code);
+        } catch (\Throwable $e) {
+            error_log('[SHA BUILDER] Custom Functions error: ' . $e->getMessage());
+        }
     }
 
     public function enqueue_globals() {

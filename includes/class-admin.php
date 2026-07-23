@@ -569,6 +569,15 @@ class Sha_Builder_Admin {
             'sha-builder-globals',
             array($this, 'render_globals_page')
         );
+
+        add_submenu_page(
+            'sha-builder',
+            __('Custom Functions', 'sha-builder'),
+            __('Custom Functions', 'sha-builder'),
+            'manage_options',
+            'sha-builder-functions',
+            array($this, 'render_custom_functions_page')
+        );
     }
 
     public function register_settings() {
@@ -576,6 +585,7 @@ class Sha_Builder_Admin {
         register_setting('sha_builder_settings', 'sha_builder_active_footer', 'intval');
         register_setting('sha_builder_globals_settings', 'sha_builder_global_css');
         register_setting('sha_builder_globals_settings', 'sha_builder_global_js');
+        register_setting('sha_builder_globals_settings', 'sha_builder_global_php');
     }
 
     public function render_config_page() {
@@ -591,6 +601,13 @@ class Sha_Builder_Admin {
             wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
         }
         include SHA_BUILDER_PATH . 'admin/templates/globals-page.php';
+    }
+
+    public function render_custom_functions_page() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('You do not have sufficient permissions.', 'sha-builder'));
+        }
+        include SHA_BUILDER_PATH . 'admin/templates/custom-functions-page.php';
     }
 
 
