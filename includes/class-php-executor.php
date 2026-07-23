@@ -116,27 +116,27 @@ class Sha_Builder_PHP_Executor {
             return $html;
         }
 
+        // In frontend builder mode, skip execution so broken PHP doesn't crash the UI.
+        if (class_exists('Sha_Builder_Frontend_Builder') && Sha_Builder_Frontend_Builder::is_builder_mode()) {
+            return '<div class="sha-php-placeholder" style="padding:20px;border:2px dashed #f0833a;background:#fff3e0;color:#a04000;text-align:center;font-family:monospace;font-size:13px;">'
+                . '⚡ PHP Code — <strong>Not executed in builder mode.</strong> Save &amp; exit builder to test.</div>';
+        }
+
         ob_start();
         try {
             eval('?>' . $html);
             $output = ob_get_clean();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             while (ob_get_level()) { ob_end_clean(); }
-            error_log('[SHA BUILDER] PHP execution error (Exception): ' . $e->getMessage());
-            return $html;
-        } catch (\ParseError $e) {
-            while (ob_get_level()) { ob_end_clean(); }
-            error_log('[SHA BUILDER] PHP execution error (ParseError): ' . $e->getMessage());
-            return $html;
-        } catch (\Error $e) {
-            while (ob_get_level()) { ob_end_clean(); }
-            error_log('[SHA BUILDER] PHP execution error (Error): ' . $e->getMessage());
-            return $html;
+            error_log('[SHA BUILDER] PHP execution error: ' . $e->getMessage());
+            return '<div class="sha-php-error" style="padding:15px;border:2px solid #d63638;background:#fcf0f1;color:#8a2424;text-align:center;font-family:monospace;font-size:13px;">'
+                . '⚠️ PHP Error: ' . esc_html($e->getMessage()) . '</div>';
         }
 
         if ($output === false || $output === null) {
             error_log('[SHA BUILDER] PHP execution returned no output');
-            return $html;
+            return '<div class="sha-php-error" style="padding:15px;border:2px solid #d63638;background:#fcf0f1;color:#8a2424;text-align:center;font-family:monospace;font-size:13px;">'
+                . '⚠️ PHP execution returned no output.</div>';
         }
 
         return $output;
