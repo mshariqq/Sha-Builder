@@ -111,11 +111,6 @@ class Sha_Builder_PHP_Executor {
             return $html;
         }
 
-        $capability = apply_filters('sha_builder_php_execution_capability', 'manage_options');
-        if (!current_user_can($capability)) {
-            return $html;
-        }
-
         // In frontend builder mode, skip execution so broken PHP doesn't crash the UI.
         if (class_exists('Sha_Builder_Frontend_Builder') && Sha_Builder_Frontend_Builder::is_builder_mode()) {
             return '<div class="sha-php-placeholder" style="padding:20px;border:2px dashed #f0833a;background:#fff3e0;color:#a04000;text-align:center;font-family:monospace;font-size:13px;">'
