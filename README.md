@@ -7,6 +7,13 @@
 Free, open-source alternative to Elementor for developers who want direct HTML/CSS/JS control.
 
 <p align="center">
+  <video controls width="100%" poster="docs/assets/logo.png">
+    <source src="docs/assets/overview.mp4" type="video/mp4">
+    Your browser does not support HTML5 video.
+  </video>
+</p>
+
+<p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-GPL%20v2%20or%20later-orange.svg" alt="License: GPL v2 or later" /></a>
   <img src="https://img.shields.io/badge/WordPress-5.0%2B-blue.svg" alt="WordPress 5.0+" />
   <img src="https://img.shields.io/badge/PHP-7.4%2B-8892BF.svg" alt="PHP 7.4+" />
