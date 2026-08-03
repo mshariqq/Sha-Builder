@@ -130,6 +130,12 @@
     .code-win .bar .file { margin-left: 10px; color: var(--muted); font-size: 0.82rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
     .code-win pre { padding: 20px 22px; font-size: 0.88rem; line-height: 1.7; overflow-x: auto; }
     .code-win code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #d6dbe7; }
+    .hero-visual {
+      max-width: 860px; margin: 56px auto 0;
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 40px 90px -30px rgba(0,0,0,0.7); background: #000;
+    }
+    .hero-visual img { display: block; width: 100%; }
     .tok-tag { color: #f97316; } .tok-attr { color: #7dd3fc; } .tok-str { color: #a5f3a5; } .tok-c { color: #6b7280; } .tok-php { color: #c4b5fd; }
 
     /* ---------- Section scaffold ---------- */
@@ -289,24 +295,8 @@
         <span>WordPress 5.0+</span><span>PHP 7.4+</span><span>Theme Builder</span><span>WooCommerce ready</span>
       </div>
 
-      <div class="code-win reveal">
-        <div class="bar">
-          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-          <span class="file">page-builder.html</span>
-        </div>
-        <pre><code><span class="tok-c">&lt;!-- Paste from Claude / ChatGPT, then add PHP --&gt;</span>
-<span class="tok-tag">&lt;section</span> <span class="tok-attr">class</span>=<span class="tok-str">"hero"</span><span class="tok-tag">&gt;</span>
-  <span class="tok-tag">&lt;h1&gt;</span><span class="tok-php">&lt;?php echo get_bloginfo('name'); ?&gt;</span><span class="tok-tag">&lt;/h1&gt;</span>
-  <span class="tok-tag">&lt;p&gt;</span>Design anything, from your own markup.<span class="tok-tag">&lt;/p&gt;</span>
-<span class="tok-tag">&lt;/section&gt;</span>
-
-<span class="tok-c">&lt;!-- Dynamic product card (WooCommerce) --&gt;</span>
-<span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"product-grid"</span><span class="tok-tag">&gt;</span>
-  <span class="tok-php">&lt;?php</span>
-    <span class="tok-php">$products = wc_get_products(['limit' =&gt; 8]);</span>
-    <span class="tok-php">foreach ($products as $p) { echo woocommerce_template_loop_product_link(); }</span>
-  <span class="tok-php">?&gt;</span>
-<span class="tok-tag">&lt;/div&gt;</span></code></pre>
+      <div class="hero-visual reveal">
+        <img src="assets/overview.gif" alt="Sha Builder overview — live preview, code editing and PHP injection" />
       </div>
     </div>
   </header>
