@@ -3,123 +3,495 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sha Builder — Free Visual Page Builder for WordPress</title>
-  <meta name="description" content="Free, open-source visual page builder for WordPress with direct HTML/CSS/JS control. A lightweight alternative to Elementor for developers." />
+  <title>Sha Builder — Turn HTML, CSS, JS &amp; PHP into WordPress Pages</title>
+  <meta name="description" content="Sha Builder is a code-first visual page builder for WordPress. Copy-paste HTML/CSS/JS from Claude or ChatGPT, inject PHP for dynamic sections, design WooCommerce pages, and ship fast." />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --orange: #f97316;
-      --ink: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --bg-soft: #f8fafc;
+      --bg: #080b14;
+      --bg-2: #0d1220;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-solid: #111827;
+      --border: rgba(255, 255, 255, 0.09);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #f4f6fb;
+      --muted: #98a2b8;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --accent-glow: rgba(249, 115, 22, 0.35);
+      --radius: 18px;
+      --maxw: 1120px;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: var(--ink);
-      line-height: 1.6;
-      background: #fff;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
     }
-    a { color: #ea580c; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+    h1, h2, h3, .display { font-family: "Space Grotesk", "Inter", sans-serif; letter-spacing: -0.02em; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+    .container { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+    ::selection { background: var(--accent); color: #fff; }
 
-    /* Nav */
+    /* ---------- Background decorations ---------- */
+    .bg-fx {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(60% 45% at 15% 0%, rgba(249, 115, 22, 0.14), transparent 60%),
+        radial-gradient(50% 40% at 85% 15%, rgba(56, 89, 255, 0.10), transparent 60%),
+        radial-gradient(70% 55% at 50% 110%, rgba(249, 115, 22, 0.08), transparent 60%),
+        var(--bg);
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: -1; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(80% 60% at 50% 0%, #000 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(80% 60% at 50% 0%, #000 30%, transparent 100%);
+    }
+
+    /* ---------- Nav ---------- */
     .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 24px;
-      background: #0f172a;
-      color: #fff;
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(8, 11, 20, 0.72);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
     }
-    .nav img { width: 26px; height: 26px; border-radius: 6px; }
-    .nav .brand { font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
-    .nav .right { margin-left: auto; display: flex; gap: 16px; align-items: center; }
-    .nav .right a { color: #cbd5e1; font-size: 0.95rem; }
-    .nav .right a:hover { color: #fff; }
+    .nav-inner { display: flex; align-items: center; gap: 20px; height: 68px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-family: "Space Grotesk"; font-weight: 700; font-size: 1.05rem; }
+    .brand img { width: 30px; height: 30px; border-radius: 8px; }
+    .nav-links { display: flex; gap: 26px; margin-left: auto; align-items: center; }
+    .nav-links a:not(.btn) { color: var(--muted); font-size: 0.93rem; font-weight: 500; transition: color .18s; }
+    .nav-links a:not(.btn):hover { color: var(--text); }
+    .nav-toggle { display: none; background: none; border: 0; color: var(--text); font-size: 1.4rem; cursor: pointer; }
 
-    /* Hero */
-    .hero { text-align: center; padding: 64px 24px 48px; background: linear-gradient(180deg, #fff7ed, #fff); }
-    .hero img.logo { width: 96px; height: 96px; border-radius: 20px; }
-    .hero h1 { margin: 18px 0 10px; font-size: 2.5rem; letter-spacing: -0.02em; }
-    .hero p { color: var(--muted); font-size: 1.15rem; max-width: 620px; margin: 0 auto; }
-    .hero .actions { margin-top: 26px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    /* ---------- Buttons ---------- */
     .btn {
-      display: inline-block; background: var(--orange); color: #fff;
-      padding: 12px 22px; border-radius: 10px; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff; font-weight: 600; font-size: 0.95rem;
+      padding: 12px 22px; border-radius: 12px;
+      box-shadow: 0 10px 30px -8px var(--accent-glow);
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s;
+      white-space: nowrap;
     }
-    .btn:hover { background: #ea580c; color: #fff; text-decoration: none; }
-    .btn.gh { background: #fff; color: var(--ink); border: 1px solid var(--border); }
-    .btn.gh:hover { background: var(--bg-soft); color: var(--ink); }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px -8px var(--accent-glow); }
+    .btn.ghost {
+      background: var(--surface); border: 1px solid var(--border-strong); color: var(--text);
+      box-shadow: none;
+    }
+    .btn.ghost:hover { border-color: var(--accent); background: rgba(249,115,22,0.08); box-shadow: none; }
+    .btn.sm { padding: 9px 16px; font-size: 0.88rem; }
 
-    section { padding: 48px 0; }
-    h2 { font-size: 1.6rem; letter-spacing: -0.01em; }
-    .sub { color: var(--muted); margin-top: -6px; }
+    /* ---------- Hero ---------- */
+    .hero { padding: 96px 0 64px; text-align: center; position: relative; }
+    .hero .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; font-weight: 600; color: var(--accent-2);
+      background: rgba(249,115,22,0.10); border: 1px solid rgba(249,115,22,0.28);
+      padding: 7px 14px; border-radius: 999px; margin-bottom: 26px;
+    }
+    .hero .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .hero h1 {
+      font-size: clamp(2.4rem, 6vw, 4.2rem); line-height: 1.08; font-weight: 700;
+      max-width: 900px; margin: 0 auto 22px;
+    }
+    .hero h1 .grad { background: linear-gradient(120deg, var(--accent-2), #ffd9a8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .hero .lead {
+      font-size: clamp(1.05rem, 2vw, 1.22rem); color: var(--muted);
+      max-width: 760px; margin: 0 auto 34px;
+    }
+    .hero .lead b { color: var(--text); font-weight: 600; }
+    .hero .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-bottom: 26px; }
+    .hero .meta { color: var(--muted); font-size: 0.86rem; display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
 
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 22px; }
-    .card { border: 1px solid var(--border); background: var(--bg-soft); border-radius: 12px; padding: 20px; }
-    .card h3 { margin: 0 0 6px; font-size: 1.02rem; }
-    .card p { margin: 0; color: var(--muted); font-size: 0.93rem; }
+    /* ---------- Hero code window ---------- */
+    .code-win {
+      max-width: 860px; margin: 56px auto 0; text-align: left;
+      background: rgba(17,24,39,0.85); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: 0 40px 90px -30px rgba(0,0,0,0.7);
+      overflow: hidden; backdrop-filter: blur(8px);
+    }
+    .code-win .bar {
+      display: flex; align-items: center; gap: 8px; padding: 13px 18px;
+      border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);
+    }
+    .code-win .bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+    .code-win .bar .dot.r { background: #ff5f57; } .code-win .bar .dot.y { background: #febc2e; } .code-win .bar .dot.g { background: #28c840; }
+    .code-win .bar .file { margin-left: 10px; color: var(--muted); font-size: 0.82rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .code-win pre { padding: 20px 22px; font-size: 0.88rem; line-height: 1.7; overflow-x: auto; }
+    .code-win code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #d6dbe7; }
+    .tok-tag { color: #f97316; } .tok-attr { color: #7dd3fc; } .tok-str { color: #a5f3a5; } .tok-c { color: #6b7280; } .tok-php { color: #c4b5fd; }
 
-    /* Demo */
-    .demo .caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 12px; }
+    /* ---------- Section scaffold ---------- */
+    section { padding: 84px 0; }
+    .sec-head { text-align: center; max-width: 720px; margin: 0 auto 54px; }
+    .eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .sec-head h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.15; margin-bottom: 16px; }
+    .sec-head p { color: var(--muted); font-size: 1.05rem; }
 
-    footer { border-top: 1px solid var(--border); background: var(--bg-soft); padding: 30px 0; margin-top: 24px; text-align: center; color: var(--muted); font-size: 0.9rem; }
-    footer a { color: var(--muted); }
-    footer a:hover { color: #ea580c; }
+    /* ---------- Cards ---------- */
+    .grid { display: grid; gap: 20px; }
+    .g3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 26px; transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      position: relative; overflow: hidden;
+    }
+    .card:hover { transform: translateY(-4px); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.04); }
+    .card .ic {
+      width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, rgba(249,115,22,0.22), rgba(249,115,22,0.06));
+      border: 1px solid rgba(249,115,22,0.3); margin-bottom: 16px; color: var(--accent-2); font-size: 1.3rem;
+    }
+    .card h3 { font-size: 1.12rem; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 0.94rem; }
+    .card .code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; font-size: 0.85em; color: #fcd34d; }
+
+    /* ---------- Steps ---------- */
+    .steps { counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+    .step {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px;
+      position: relative;
+    }
+    .step::before {
+      counter-increment: step; content: "0" counter(step);
+      font-family: "Space Grotesk"; font-weight: 700; font-size: 1.6rem;
+      color: rgba(249,115,22,0.85); display: block; margin-bottom: 10px;
+    }
+    .step h3 { font-size: 1.08rem; margin-bottom: 8px; }
+    .step p { color: var(--muted); font-size: 0.93rem; }
+
+    /* ---------- Showcase split ---------- */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .split h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); line-height: 1.15; margin-bottom: 18px; }
+    .split p { color: var(--muted); font-size: 1.02rem; margin-bottom: 16px; }
+    .split ul { list-style: none; margin-top: 6px; }
+    .split li { display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; color: var(--muted); font-size: 0.98rem; }
+    .split li::before { content: "✓"; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+    /* ---------- Demo video ---------- */
+    .video-shell {
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 0 40px 90px -40px rgba(0,0,0,0.8); background: #000;
+    }
+    .video-shell video { display: block; width: 100%; aspect-ratio: 16/9; }
+    .video-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 14px; }
+
+    /* ---------- CTA band ---------- */
+    .cta-band {
+      border-radius: 24px; padding: 64px 40px; text-align: center;
+      background:
+        radial-gradient(60% 90% at 50% 0%, rgba(249,115,22,0.18), transparent 65%),
+        linear-gradient(160deg, rgba(249,115,22,0.06), transparent),
+        var(--surface);
+      border: 1px solid rgba(249,115,22,0.25);
+      position: relative; overflow: hidden;
+    }
+    .cta-band h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin-bottom: 14px; }
+    .cta-band p { color: var(--muted); font-size: 1.05rem; max-width: 600px; margin: 0 auto 30px; }
+
+    /* ---------- Hire band ---------- */
+    .hire {
+      border-radius: 24px; padding: 64px 40px; text-align: center;
+      background: linear-gradient(160deg, #1a130b, #0d0a06);
+      border: 1px solid rgba(249,115,22,0.35); position: relative; overflow: hidden;
+    }
+    .hire::before {
+      content: ""; position: absolute; inset: -2px; z-index: 0;
+      background: conic-gradient(from 180deg at 50% 50%, rgba(249,115,22,0.5), transparent 25%, rgba(249,115,22,0.3) 50%, transparent 75%, rgba(249,115,22,0.5));
+      animation: spin 6s linear infinite;
+    }
+    .hire .inner { position: relative; z-index: 1; }
+    .hire .avatar {
+      width: 84px; height: 84px; border-radius: 50%; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(circle at 30% 30%, var(--accent-2), var(--accent)); color: #fff; font-family: "Space Grotesk"; font-weight: 700; font-size: 1.7rem;
+      box-shadow: 0 0 0 6px rgba(249,115,22,0.15), 0 20px 50px -12px var(--accent-glow);
+    }
+    .hire h2 { font-size: clamp(1.9rem, 4vw, 2.7rem); margin-bottom: 12px; }
+    .hire p { color: var(--muted); max-width: 640px; margin: 0 auto 26px; font-size: 1.04rem; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Footer ---------- */
+    footer { border-top: 1px solid var(--border); padding: 46px 0 60px; color: var(--muted); font-size: 0.9rem; }
+    .foot-grid { display: flex; justify-content: space-between; gap: 30px; flex-wrap: wrap; align-items: center; }
+    .foot-links { display: flex; gap: 22px; flex-wrap: wrap; }
+    .foot-links a:hover { color: var(--text); }
+    .foot-links a { transition: color .18s; }
+
+    /* ---------- Reveal ---------- */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 900px) {
+      .split { grid-template-columns: 1fr; gap: 36px; }
+      .nav-links { display: none; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; background: rgba(8,11,20,0.98); padding: 18px 24px; border-bottom: 1px solid var(--border); gap: 16px; align-items: flex-start; }
+      .nav-links.open { display: flex; }
+      .nav-toggle { display: block; margin-left: auto; }
+    }
+    @media (max-width: 560px) {
+      section { padding: 64px 0; }
+      .cta-band, .hire { padding: 44px 22px; }
+    }
   </style>
 </head>
 <body>
 
+  <div class="bg-fx"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ======= Nav ======= -->
   <nav class="nav">
-    <a class="brand" href="index.html"><img src="assets/logo.png" alt="Sha Builder logo" /> Sha Builder</a>
-    <div class="right">
-      <a href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">Releases</a>
+    <div class="container nav-inner">
+      <a class="brand" href="index.html"><img src="assets/logo.png" alt="Sha Builder logo" /> Sha Builder</a>
+      <button class="nav-toggle" aria-label="Toggle menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+      <div class="nav-links">
+        <a href="#why">Why</a>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#demo">Demo</a>
+        <a href="#docs">Docs</a>
+        <a href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn sm" href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">Download</a>
+      </div>
     </div>
   </nav>
 
+  <!-- ======= Hero ======= -->
   <header class="hero">
-    <img class="logo" src="assets/logo.png" alt="Sha Builder logo" />
-    <h1>Sha Builder</h1>
-    <p>Free, open-source alternative to Elementor for developers who want direct HTML/CSS/JS control.</p>
-    <div class="actions">
-      <a class="btn" href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">Download Latest Release</a>
-      <a class="btn gh" href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">View on GitHub</a>
+    <div class="container">
+      <span class="badge">Free &amp; Open Source · WordPress Plugin · GPL v2</span>
+      <h1 class="reveal">Your AI code, straight into <span class="grad">WordPress</span>.</h1>
+      <p class="lead reveal">
+        Sha Builder is a <b>code-first visual page builder</b> for developers. Copy-paste
+        <b>HTML, CSS &amp; JS</b> generated by Claude or ChatGPT, inject <b>PHP</b> to make any
+        section dynamic, and publish gorgeous WordPress pages — no page-builder lock-in, no
+        fighting a proprietary editor.
+      </p>
+      <div class="cta-row reveal">
+        <a class="btn" href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">⬇ Download Latest Release</a>
+        <a class="btn ghost" href="#demo">▶ Watch the demo</a>
+        <a class="btn ghost" href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">GitHub Repo</a>
+      </div>
+      <div class="meta reveal">
+        <span>WordPress 5.0+</span><span>PHP 7.4+</span><span>Theme Builder</span><span>WooCommerce ready</span>
+      </div>
+
+      <div class="code-win reveal">
+        <div class="bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="file">page-builder.html</span>
+        </div>
+        <pre><code><span class="tok-c">&lt;!-- Paste from Claude / ChatGPT, then add PHP --&gt;</span>
+<span class="tok-tag">&lt;section</span> <span class="tok-attr">class</span>=<span class="tok-str">"hero"</span><span class="tok-tag">&gt;</span>
+  <span class="tok-tag">&lt;h1&gt;</span><span class="tok-php">&lt;?php echo get_bloginfo('name'); ?&gt;</span><span class="tok-tag">&lt;/h1&gt;</span>
+  <span class="tok-tag">&lt;p&gt;</span>Design anything, from your own markup.<span class="tok-tag">&lt;/p&gt;</span>
+<span class="tok-tag">&lt;/section&gt;</span>
+
+<span class="tok-c">&lt;!-- Dynamic product card (WooCommerce) --&gt;</span>
+<span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"product-grid"</span><span class="tok-tag">&gt;</span>
+  <span class="tok-php">&lt;?php</span>
+    <span class="tok-php">$products = wc_get_products(['limit' =&gt; 8]);</span>
+    <span class="tok-php">foreach ($products as $p) { echo woocommerce_template_loop_product_link(); }</span>
+  <span class="tok-php">?&gt;</span>
+<span class="tok-tag">&lt;/div&gt;</span></code></pre>
+      </div>
     </div>
   </header>
 
-  <section>
-    <div class="container">
-      <h2>Features</h2>
-      <p class="sub">The speed of a visual builder, without sacrificing code control.</p>
-      <div class="cards">
-        <div class="card"><h3>Live preview</h3><p>Edit HTML, CSS, and JS and see changes instantly in the preview iframe.</p></div>
-        <div class="card"><h3>Visual element inspector</h3><p>Hover to inspect, click to select, and edit properties without touching code.</p></div>
-        <div class="card"><h3>Responsive design</h3><p>Switch between desktop, tablet, and mobile while you build.</p></div>
-        <div class="card"><h3>PHP support</h3><p>Write PHP in the HTML editor, executed on save and render with automatic caching.</p></div>
+  <!-- ======= Why ======= -->
+  <section id="why">
+    <div class="container split">
+      <div class="reveal">
+        <div class="eyebrow">Why Sha Builder</div>
+        <h2>Code is the source of truth. WordPress is the canvas.</h2>
+        <p>
+          Most builders lock you into drag-and-drop. Sha Builder is different — you keep
+          full control of the markup while still getting a live, visual editing experience.
+        </p>
+        <ul>
+          <li>Generate the design in <b style="color:var(--text)">Claude, ChatGPT or Cursor</b> — copy, paste, publish.</li>
+          <li><b style="color:var(--text)">PHP anywhere</b> — turn static divs, sections &amp; components dynamic with a single <span class="code">&lt;?php ?&gt;</span>.</li>
+          <li><b style="color:var(--text)">Theme Builder</b> — assign templates to archives, posts &amp; pages.</li>
+          <li><b style="color:var(--text)">WooCommerce friendly</b> — style shop, cart, checkout &amp; product pages with your own code and WC hooks.</li>
+          <li><b style="color:var(--text)">Fast by default</b> — output is cached automatically for speed.</li>
+        </ul>
+      </div>
+      <div class="reveal">
+        <div class="code-win">
+          <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="file">style.css</span></div>
+          <pre><code><span class="tok-attr">.hero</span> { padding: 96px 0; background: radial-gradient(...); }
+<span class="tok-attr">.product-grid</span> { display: grid; gap: 20px; }
+<span class="tok-attr">.product-grid</span> a { transition: transform .2s; }
+<span class="tok-attr">.product-grid</span> a:hover { transform: translateY(-4px); }</code></pre>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="demo">
+  <!-- ======= Features ======= -->
+  <section id="features" style="padding-top:0">
     <div class="container">
-      <h2>Demo</h2>
-      <p class="sub">Watch Sha Builder in action.</p>
-      <video controls preload="metadata" poster="assets/logo.png" style="width:100%; border-radius:14px; box-shadow:0 10px 30px rgba(15,23,42,0.12); border:1px solid var(--border); background:#0f172a;">
-        <source src="assets/overview.mp4" type="video/mp4" />
-        Your browser does not support HTML5 video.
-      </video>
-      <p class="caption">Overview of the Sha Builder editor.</p>
+      <div class="sec-head reveal">
+        <div class="eyebrow">Features</div>
+        <h2>Everything a developer needs. Nothing they don't.</h2>
+        <p>Visual speed, code control, and full WordPress power.</p>
+      </div>
+      <div class="grid g3">
+        <div class="card reveal"><div class="ic">◉</div><h3>Live visual preview</h3><p>Edit HTML, CSS &amp; JS in the code panel and watch changes render instantly in the iframe — hover to inspect any element, click to restyle.</p></div>
+        <div class="card reveal"><div class="ic">✦</div><h3>AI-ready workflow</h3><p>Paste markup generated by Claude or ChatGPT straight into the editors. Sha Builder renders it on your WordPress site as-is — no translation layer, no mangled output.</p></div>
+        <div class="card reveal"><div class="ic">&lt;/&gt;</div><h3>PHP injection</h3><p>Write <span class="code">&lt;?php ?&gt;</span> directly inside your HTML. Pull posts, users, options or products into any element and turn static components into dynamic ones.</p></div>
+        <div class="card reveal"><div class="ic">▦</div><h3>Theme Builder</h3><p>Design your own archive, single post and page templates, then assign them from the Sha Builder meta box — headers, footers and page types included.</p></div>
+        <div class="card reveal"><div class="ic">🛒</div><h3>WooCommerce ready</h3><p>Build custom shop, product, cart and checkout layouts with your own HTML/CSS/JS and PHP, wired in through native WooCommerce hooks.</p></div>
+        <div class="card reveal"><div class="ic">⚡</div><h3>Fast &amp; secure</h3><p>Rendered output is cached for speed and PHP executes safely server-side on save/render. Your original source stays untouched in the editor.</p></div>
+      </div>
     </div>
   </section>
 
+  <!-- ======= How it works ======= -->
+  <section id="how" style="background: var(--bg-2); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="eyebrow">How it works</div>
+        <h2>From AI prompt to published page in four steps</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><h3>Generate</h3><p>Build your design in Claude, ChatGPT, or any AI tool — get clean HTML, CSS and JS back.</p></div>
+        <div class="step reveal"><h3>Paste</h3><p>Drop the code into Sha Builder's editors. The live preview updates instantly.</p></div>
+        <div class="step reveal"><h3>Make it dynamic</h3><p>Inject <span class="code">&lt;?php ?&gt;</span> to pull in real data — posts, products, options, user info.</p></div>
+        <div class="step reveal"><h3>Publish</h3><p>Hit save. Sha Builder renders the page on your WordPress frontend and caches it for speed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Use cases ======= -->
+  <section id="use-cases">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Use cases</div>
+        <h2>Built for the way developers actually build</h2>
+      </div>
+      <div class="grid g2">
+        <div class="card reveal">
+          <h3>AI code → WordPress</h3>
+          <p>Turn ChatGPT or Claude prototypes into live WordPress pages in minutes — copy the output, paste it in, ship it. No proprietary builder syntax to learn.</p>
+        </div>
+        <div class="card reveal">
+          <h3>Dynamic components</h3>
+          <p>Drop <span class="code">&lt;?php echo the_title(); ?&gt;</span> into any div and your section becomes a dynamic, data-driven component.</p>
+        </div>
+        <div class="card reveal">
+          <h3>Custom templates</h3>
+          <p>Build archive, post and page templates visually, then assign them per post type from the meta box — your own theme-builder layer.</p>
+        </div>
+        <div class="card reveal">
+          <h3>WooCommerce storefronts</h3>
+          <p>Style product grids, single product pages, cart and checkout with your own code and WooCommerce hooks — no child-theme hacks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Demo ======= -->
+  <section id="demo" style="background: var(--bg-2); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div class="container">
+      <div class="sec-head reveal">
+        <div class="eyebrow">Demo</div>
+        <h2>See Sha Builder in action</h2>
+        <p>Copy, paste, inject PHP, publish.</p>
+      </div>
+      <div class="video-shell reveal">
+        <video controls preload="metadata" poster="assets/logo.png">
+          <source src="assets/overview.mp4" type="video/mp4" />
+          Your browser does not support HTML5 video.
+        </video>
+      </div>
+      <p class="video-caption reveal">Overview of the Sha Builder editor — live preview, element inspector, and code-first workflow.</p>
+    </div>
+  </section>
+
+  <!-- ======= Docs + Download ======= -->
+  <section id="docs">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Start building with Sha Builder today</h2>
+        <p>
+          Free. Open source. No license fees, no subscriptions, no lock-in. Grab the latest
+          <span class="code" style="color:#fcd34d">ShaBuilder.zip</span> and upload it from
+          WordPress Admin → Plugins → Add New → Upload Plugin.
+        </p>
+        <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap">
+          <a class="btn" href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">⬇ Download Latest Release</a>
+          <a class="btn ghost" href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">Read the Docs on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Hire ======= -->
+  <section id="hire">
+    <div class="container">
+      <div class="hire reveal">
+        <div class="inner">
+          <div class="avatar">SRQ</div>
+          <div class="eyebrow">Get help from the builder's author</div>
+          <h2>Need a page, theme, or full WooCommerce build?</h2>
+          <p>
+            Sha Builder is crafted by <b style="color:var(--text)">SRQ Ahmed</b> — a developer who ships
+            WordPress, WooCommerce, and custom front-ends for a living. Custom pages, dynamic
+            components, or an entire storefront built on Sha Builder — hire the person who
+            wrote the plugin.
+          </p>
+          <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap">
+            <a class="btn" href="https://mshariqq.github.io" target="_blank" rel="noopener">Hire SRQ Ahmed →</a>
+            <a class="btn ghost" href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">View the code</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= Footer ======= -->
   <footer>
-    Sha Builder is free and open source software, licensed under the GPL v2 or later.
-    <a href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">Contribute on GitHub</a>.
+    <div class="container foot-grid">
+      <div style="display:flex; align-items:center; gap:10px">
+        <img src="assets/logo.png" width="26" height="26" alt="Sha Builder logo" style="border-radius:6px" />
+        <span>Sha Builder — free &amp; open source under GPL v2 or later.</span>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/mshariqq/Sha-Builder" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/mshariqq/Sha-Builder/releases/latest" target="_blank" rel="noopener">Releases</a>
+        <a href="https://mshariqq.github.io" target="_blank" rel="noopener">Hire the developer</a>
+      </div>
+    </div>
   </footer>
 
+  <script>
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+    document.querySelectorAll('.nav-links a').forEach((a) => {
+      a.addEventListener('click', () => document.querySelector('.nav-links').classList.remove('open'));
+    });
+  </script>
 </body>
 </html>
