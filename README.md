@@ -18,14 +18,6 @@ Free, open-source alternative to Elementor for developers who want direct HTML/C
 
 ---
 
-## Demo
-
-<p align="center">
-  <img src="docs/assets/overview.gif" width="100%" alt="Sha Builder overview" />
-</p>
-
----
-
 ## Features
 
 - **Live Preview** — Edit HTML, CSS, and JS in the code panel and see changes instantly in the iframe preview.
