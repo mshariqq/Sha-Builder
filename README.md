@@ -7,10 +7,7 @@
 Free, open-source alternative to Elementor for developers who want direct HTML/CSS/JS control.
 
 <p align="center">
-  <video controls width="100%" poster="docs/assets/logo.png">
-    <source src="docs/assets/overview.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
+  <video src="docs/assets/overview.mp4" controls="controls" preload="metadata" poster="docs/assets/logo.png" width="100%"></video>
 </p>
 
 <p align="center">
@@ -24,10 +21,7 @@ Free, open-source alternative to Elementor for developers who want direct HTML/C
 ## Demo
 
 <p align="center">
-  <video controls width="100%" poster="docs/assets/logo.png">
-    <source src="docs/assets/overview.mp4" type="video/mp4">
-    Your browser does not support HTML5 video.
-  </video>
+  <video src="docs/assets/overview.mp4" controls="controls" preload="metadata" poster="docs/assets/logo.png" width="100%"></video>
 </p>
 
 ---
