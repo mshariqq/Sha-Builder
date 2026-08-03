@@ -7,11 +7,7 @@
 Free, open-source alternative to Elementor for developers who want direct HTML/CSS/JS control.
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/mshariqq/Sha-Builder/main/docs/assets/overview.mp4">
-    <img src="docs/assets/logo.png" width="420" alt="Watch the Sha Builder overview video" />
-  </a>
-  <br />
-  <em>Click the thumbnail to play the overview video.</em>
+  <img src="docs/assets/overview.gif" width="100%" alt="Sha Builder overview" />
 </p>
 
 <p align="center">
@@ -25,11 +21,7 @@ Free, open-source alternative to Elementor for developers who want direct HTML/C
 ## Demo
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/mshariqq/Sha-Builder/main/docs/assets/overview.mp4">
-    <img src="docs/assets/logo.png" width="420" alt="Watch the Sha Builder overview video" />
-  </a>
-  <br />
-  <em>Click the thumbnail to play the overview video.</em>
+  <img src="docs/assets/overview.gif" width="100%" alt="Sha Builder overview" />
 </p>
 
 ---
